@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Bolão Copa 2026 — Copa 2026</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'Segoe UI',Arial,sans-serif;background:linear-gradient(160deg,#003366 0%,#006633 100%);min-height:100vh;padding:24px 16px 40px}
+.wrap{max-width:480px;margin:0 auto}
+
+/* HEADER */
+.header{text-align:center;padding:32px 16px 28px}
+.header .trofeu{font-size:3.5em;display:block;margin-bottom:10px;filter:drop-shadow(0 4px 8px rgba(0,0,0,.4))}
+.header h1{color:#FFD700;font-size:2em;font-weight:900;text-shadow:2px 2px 8px rgba(0,0,0,.5);line-height:1.2;margin-bottom:6px}
+.header p{color:#cce5ff;font-size:.92em;opacity:.9}
+
+/* CARDS DE MENU */
+.menu{display:flex;flex-direction:column;gap:14px;margin-bottom:28px}
+
+.menu-card{display:block;text-decoration:none;background:#fff;border-radius:18px;padding:20px 22px;box-shadow:0 6px 24px rgba(0,0,0,.22);transition:transform .18s,box-shadow .18s;border:3px solid transparent;position:relative;overflow:hidden}
+.menu-card:hover{transform:translateY(-3px);box-shadow:0 10px 32px rgba(0,0,0,.3)}
+.menu-card:active{transform:scale(.98)}
+
+/* faixa colorida lateral */
+.menu-card::before{content:'';position:absolute;left:0;top:0;bottom:0;width:6px;border-radius:4px 0 0 4px}
+.card-apostas::before{background:linear-gradient(180deg,#FFD700,#FFA500)}
+.card-manual::before{background:linear-gradient(180deg,#0077b6,#00b4d8)}
+.card-gestor::before{background:linear-gradient(180deg,#006633,#2dc653)}
+
+.card-inner{display:flex;align-items:center;gap:16px}
+.card-icon{font-size:2.4em;flex-shrink:0;line-height:1}
+.card-txt{flex:1}
+.card-txt h2{color:#003366;font-size:1.08em;font-weight:800;margin-bottom:3px}
+.card-txt p{color:#555;font-size:.83em;line-height:1.45}
+.card-arrow{color:#ccc;font-size:1.4em;flex-shrink:0}
+
+/* TAG */
+.tag{display:inline-block;font-size:.65em;font-weight:700;padding:2px 8px;border-radius:20px;margin-left:7px;vertical-align:middle;text-transform:uppercase}
+.tag-part{background:#fff3cd;color:#856404}
+.tag-org{background:#d1e7dd;color:#0a4a2e}
+
+/* SEPARADOR */
+.sep{text-align:center;color:rgba(255,255,255,.35);font-size:.78em;margin:4px 0 10px;letter-spacing:.06em;text-transform:uppercase}
+
+/* RODAPÉ */
+.footer{text-align:center;color:rgba(255,255,255,.4);font-size:.74em;margin-top:8px;line-height:1.7}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <div class="header">
+    <span class="trofeu">🏆</span>
+    <h1>Bolão Copa 2026</h1>
+    <p>Copa do Mundo 2026 · Selecione o que deseja acessar</p>
+  </div>
+
+  <div class="menu">
+
+    <div class="sep">Para participantes</div>
+
+    <a class="menu-card card-apostas" href="apostas_participante.html">
+      <div class="card-inner">
+        <span class="card-icon">⚽</span>
+        <div class="card-txt">
+          <h2>Preencher Apostas <span class="tag tag-part">Participante</span></h2>
+          <p>Escolha os classificados de cada grupo e exporte seu arquivo para enviar ao organizador.</p>
+        </div>
+        <span class="card-arrow">›</span>
+      </div>
+    </a>
+
+    <a class="menu-card card-manual" href="manual_bolao.html">
+      <div class="card-inner">
+        <span class="card-icon">📋</span>
+        <div class="card-txt">
+          <h2>Manual do Bolão <span class="tag tag-part">Participante</span></h2>
+          <p>Regras, premiação e passo a passo de como preencher e enviar suas apostas.</p>
+        </div>
+        <span class="card-arrow">›</span>
+      </div>
+    </a>
+
+    <div class="sep">Para o organizador</div>
+
+    <a class="menu-card card-gestor" href="gestor_bolao.html">
+      <div class="card-inner">
+        <span class="card-icon">📊</span>
+        <div class="card-txt">
+          <h2>Painel do Gestor <span class="tag tag-org">Organizador</span></h2>
+          <p>Importe os arquivos dos participantes, acompanhe as apostas e veja o ranking.</p>
+        </div>
+        <span class="card-arrow">›</span>
+      </div>
+    </a>
+
+  </div>
+
+  <div class="footer">
+    Bolão Copa 2026 · Copa do Mundo 2026<br>
+    Compartilhe este link com todos os participantes
+  </div>
+
+</div>
+</body>
+</html>
