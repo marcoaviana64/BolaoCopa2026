@@ -1,0 +1,194 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Painel de Classificação — Bolão Copa 2026</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'Segoe UI',Arial,sans-serif;background:linear-gradient(135deg,#1a1a2e 0%,#16213e 50%,#0f3460 100%);min-height:100vh;padding:20px;color:#eee}
+.container{max-width:1100px;margin:0 auto}
+header{text-align:center;padding:24px 16px 10px}
+header h1{color:#FFD700;font-size:2em;text-shadow:2px 2px 6px rgba(0,0,0,.6);margin-bottom:6px}
+header p{color:#ccc;font-size:.92em}
+.aviso{display:inline-block;margin-top:10px;background:rgba(255,165,0,.15);border:1px solid rgba(255,165,0,.4);color:#ffb347;padding:7px 16px;border-radius:20px;font-size:.82em;font-weight:600}
+.secao{background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.12);border-radius:14px;padding:20px 22px;margin-bottom:20px}
+.secao h2{color:#FFD700;font-size:1.05em;margin-bottom:14px;display:flex;align-items:center;gap:8px}
+.explicacao p{font-size:.88em;color:#ddd;line-height:1.7;margin-bottom:8px}
+.explicacao b{color:#FFD700}
+.premios{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-top:6px}
+.premio-card{background:rgba(0,0,0,.2);border-radius:10px;padding:12px;text-align:center}
+.premio-card .pct{color:#FFD700;font-weight:800;font-size:1.2em}
+.premio-card .val{color:#fff;font-size:.95em;margin-top:2px}
+.pódio{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;margin-top:6px}
+.pod-card{border-radius:12px;padding:18px 14px;text-align:center;position:relative}
+.pod-card.p1{background:rgba(255,215,0,.16);border:1px solid rgba(255,215,0,.45);order:2}
+.pod-card.p2{background:rgba(192,192,192,.13);border:1px solid rgba(192,192,192,.35);order:1;align-self:end}
+.pod-card.p3{background:rgba(205,127,50,.13);border:1px solid rgba(205,127,50,.3);order:3;align-self:end}
+.pod-medal{font-size:2.2em}
+.pod-nome{font-weight:700;font-size:1.0em;margin:6px 0 2px;color:#fff}
+.pod-pts{font-weight:900;color:#FFD700;font-size:1.2em}
+.pod-pct{font-size:.76em;color:#aaa}
+.pod-premio{font-size:.8em;color:#7CFC9A;font-weight:700;margin-top:4px}
+.empate-tag{position:absolute;top:8px;right:8px;background:#ffb347;color:#000;font-size:.65em;font-weight:800;padding:2px 7px;border-radius:8px}
+.busca{width:100%;padding:11px 16px;border-radius:10px;border:1px solid rgba(255,255,255,.2);background:rgba(255,255,255,.08);color:#fff;font-size:.92em;margin-bottom:14px}
+.busca::placeholder{color:#999}
+.busca:focus{outline:none;border-color:#FFD700}
+.linha-part{background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.1);border-radius:10px;margin-bottom:8px;overflow:hidden;transition:background .15s}
+.linha-part.premiada{border-color:rgba(255,215,0,.4)}
+.linha-part:hover{background:rgba(255,255,255,.07)}
+.linha-cabeca{display:flex;align-items:center;gap:10px;padding:12px 16px;cursor:pointer;flex-wrap:wrap}
+.linha-pos{font-weight:900;font-size:1.0em;color:#FFD700;width:70px;flex-shrink:0}
+.linha-nome{flex:1;font-weight:700;font-size:.95em;color:#eee;min-width:120px}
+.linha-pts{font-weight:900;color:#FFD700;font-size:.92em;min-width:56px;text-align:right}
+.linha-exatos{font-size:.74em;color:#999;min-width:80px;text-align:right}
+.linha-pct{font-size:.78em;color:#999;min-width:46px;text-align:right}
+.linha-premio{font-size:.82em;color:#7CFC9A;font-weight:700;min-width:80px;text-align:right}
+.linha-seta{color:#888;transition:transform .2s;font-size:.8em}
+.linha-part.aberta .linha-seta{transform:rotate(180deg)}
+.detalhe{display:none;padding:6px 16px 16px;border-top:1px dashed rgba(255,255,255,.12)}
+.linha-part.aberta .detalhe{display:block}
+.grupos-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(190px,1fr));gap:8px;margin-top:10px}
+.grupo-mini{background:rgba(0,0,0,.22);border-radius:8px;padding:8px 10px;font-size:.78em}
+.grupo-mini .gtag{display:inline-block;font-weight:800;font-size:.75em;padding:1px 7px;border-radius:5px;color:#fff;margin-bottom:5px}
+.pick{display:flex;justify-content:space-between;align-items:center;padding:2px 0}
+.pick .ok{color:#7CFC9A;font-weight:700}
+.pick .exato{color:#FFD700;font-weight:800}
+.pick .no{color:#888}
+.icone{font-size:.95em}
+.legenda{font-size:.74em;color:#999;margin-top:14px;line-height:1.6}
+.tabela-grupos{width:100%;border-collapse:collapse;font-size:.84em;margin-top:6px}
+.tabela-grupos th{background:rgba(255,215,0,.15);color:#FFD700;padding:8px;text-align:center}
+.tabela-grupos td{padding:7px 8px;text-align:center;border-bottom:1px solid rgba(255,255,255,.08)}
+.tabela-grupos td:first-child{text-align:left;font-weight:700}
+@media(max-width:640px){.pódio,.premios{grid-template-columns:1fr}.pod-card{order:0!important;align-self:auto!important}.linha-pos{width:auto}}
+</style>
+</head>
+<body>
+<div class="container">
+  <header>
+    <h1>🏆 Painel de Classificação — Bolão Copa 2026</h1>
+    <p>Como cada participante está se saindo nas apostas da fase de grupos</p>
+    <span class="aviso">⚠️ Classificação parcial — apurada com os jogos disputados até 23/06/2026, 20:42h. A fase de grupos ainda não terminou, então a posição de cada um pode mudar.</span>
+  </header>
+
+  <div class="secao explicacao">
+    <h2>❓ Como funciona a pontuação e a premiação</h2>
+    <p>Cada grupo tem 4 seleções, mas só <b>2 se classificam</b> (1º e 2º colocado). Você ganha <b>1 ponto</b> para cada time que apostou (1º ou 2º) que está hoje entre os 2 primeiros do grupo — a posição exata não importa para a pontuação. Máximo <b>24 pontos</b> (12 grupos x 2).</p>
+    <p><b>Critério de desempate:</b> quem tiver mais acertos na <b>posição exata</b> (apostou o time certo E na posição certa) fica na frente. Se ainda assim persistir o empate, o valor do prêmio daquela colocação é <b>dividido igualmente</b> entre os empatados.</p>
+    <div class="premios" id="premios"></div>
+  </div>
+
+  <div class="secao">
+    <h2>🥇🥈🥉 Pódio atual</h2>
+    <div class="pódio" id="podio"></div>
+  </div>
+
+  <div class="secao">
+    <h2>📋 Classificação geral — clique no seu nome para ver o detalhe</h2>
+    <input class="busca" id="busca" placeholder="🔍 Buscar participante pelo nome...">
+    <div id="lista"></div>
+    <div class="legenda">✅ verde = seu time está classificado (top 2) pelos resultados atuais &nbsp;|&nbsp; 🟡 amarelo/✓✓ = acertou a posição exata (vale no desempate) &nbsp;|&nbsp; cinza = ainda não está classificado</div>
+  </div>
+
+  <div class="secao">
+    <h2>📊 Classificação real atual por grupo (referência)</h2>
+    <table class="tabela-grupos">
+      <thead><tr><th>Grupo</th><th>🥇 1º (parcial)</th><th>🥈 2º (parcial)</th></tr></thead>
+      <tbody id="tabelaGrupos"></tbody>
+    </table>
+  </div>
+</div>
+
+<script>
+var DATA = {"reais": {"A": {"p1": "México", "p2": "Coreia do Sul"}, "B": {"p1": "Canadá", "p2": "Suíça"}, "C": {"p1": "Brasil", "p2": "Marrocos"}, "D": {"p1": "Estados Unidos", "p2": "Austrália"}, "E": {"p1": "Alemanha", "p2": "Costa do Marfim"}, "F": {"p1": "Holanda", "p2": "Japão"}, "G": {"p1": "Egito", "p2": "Irã"}, "H": {"p1": "Espanha", "p2": "Uruguai"}, "I": {"p1": "França", "p2": "Noruega"}, "J": {"p1": "Argentina", "p2": "Áustria"}, "K": {"p1": "Portugal", "p2": "Colômbia"}, "L": {"p1": "Inglaterra", "p2": "Gana"}}, "ranking": [{"nome": "Edgar Ventura", "pts": 21, "exatos": 20, "detalhes": [{"grupo": "A", "p1": "México", "ac1": true, "ex1": true, "p2": "Coreia do Sul", "ac2": true, "ex2": true}, {"grupo": "B", "p1": "Canadá", "ac1": true, "ex1": true, "p2": "Suíça", "ac2": true, "ex2": true}, {"grupo": "C", "p1": "Brasil", "ac1": true, "ex1": true, "p2": "Marrocos", "ac2": true, "ex2": true}, {"grupo": "D", "p1": "Turquia", "ac1": false, "ex1": false, "p2": "Estados Unidos", "ac2": true, "ex2": false}, {"grupo": "E", "p1": "Alemanha", "ac1": true, "ex1": true, "p2": "Costa do Marfim", "ac2": true, "ex2": true}, {"grupo": "F", "p1": "Holanda", "ac1": true, "ex1": true, "p2": "Japão", "ac2": true, "ex2": true}, {"grupo": "G", "p1": "Bélgica", "ac1": false, "ex1": false, "p2": "Irã", "ac2": true, "ex2": true}, {"grupo": "H", "p1": "Espanha", "ac1": true, "ex1": true, "p2": "Uruguai", "ac2": true, "ex2": true}, {"grupo": "I", "p1": "França", "ac1": true, "ex1": true, "p2": "Noruega", "ac2": true, "ex2": true}, {"grupo": "J", "p1": "Argentina", "ac1": true, "ex1": true, "p2": "Áustria", "ac2": true, "ex2": true}, {"grupo": "K", "p1": "Portugal", "ac1": true, "ex1": true, "p2": "Colômbia", "ac2": true, "ex2": true}, {"grupo": "L", "p1": "Inglaterra", "ac1": true, "ex1": true, "p2": "Croácia", "ac2": false, "ex2": false}], "posicao": 1, "premio": 297.5, "empate": true}, {"nome": "Vinicius Mendes", "pts": 21, "exatos": 20, "detalhes": [{"grupo": "A", "p1": "México", "ac1": true, "ex1": true, "p2": "Coreia do Sul", "ac2": true, "ex2": true}, {"grupo": "B", "p1": "Canadá", "ac1": true, "ex1": true, "p2": "Suíça", "ac2": true, "ex2": true}, {"grupo": "C", "p1": "Brasil", "ac1": true, "ex1": true, "p2": "Marrocos", "ac2": true, "ex2": true}, {"grupo": "D", "p1": "Estados Unidos", "ac1": true, "ex1": true, "p2": "Austrália", "ac2": true, "ex2": true}, {"grupo": "E", "p1": "Alemanha", "ac1": true, "ex1": true, "p2": "Equador", "ac2": false, "ex2": false}, {"grupo": "F", "p1": "Holanda", "ac1": true, "ex1": true, "p2": "Japão", "ac2": true, "ex2": true}, {"grupo": "G", "p1": "Bélgica", "ac1": false, "ex1": false, "p2": "Egito", "ac2": true, "ex2": false}, {"grupo": "H", "p1": "Espanha", "ac1": true, "ex1": true, "p2": "Uruguai", "ac2": true, "ex2": true}, {"grupo": "I", "p1": "França", "ac1": true, "ex1": true, "p2": "Noruega", "ac2": true, "ex2": true}, {"grupo": "J", "p1": "Argentina", "ac1": true, "ex1": true, "p2": "Áustria", "ac2": true, "ex2": true}, {"grupo": "K", "p1": "Portugal", "ac1": true, "ex1": true, "p2": "Colômbia", "ac2": true, "ex2": true}, {"grupo": "L", "p1": "Inglaterra", "ac1": true, "ex1": true, "p2": "Croácia", "ac2": false, "ex2": false}], "posicao": 1, "premio": 297.5, "empate": true}, {"nome": "Chermont", "pts": 21, "exatos": 18, "detalhes": [{"grupo": "A", "p1": "México", "ac1": true, "ex1": true, "p2": "Coreia do Sul", "ac2": true, "ex2": true}, {"grupo": "B", "p1": "Suíça", "ac1": true, "ex1": false, "p2": "Canadá", "ac2": true, "ex2": false}, {"grupo": "C", "p1": "Brasil", "ac1": true, "ex1": true, "p2": "Marrocos", "ac2": true, "ex2": true}, {"grupo": "D", "p1": "Estados Unidos", "ac1": true, "ex1": true, "p2": "Turquia", "ac2": false, "ex2": false}, {"grupo": "E", "p1": "Alemanha", "ac1": true, "ex1": true, "p2": "Costa do Marfim", "ac2": true, "ex2": true}, {"grupo": "F", "p1": "Holanda", "ac1": true, "ex1": true, "p2": "Japão", "ac2": true, "ex2": true}, {"grupo": "G", "p1": "Bélgica", "ac1": false, "ex1": false, "p2": "Egito", "ac2": true, "ex2": false}, {"grupo": "H", "p1": "Espanha", "ac1": true, "ex1": true, "p2": "Uruguai", "ac2": true, "ex2": true}, {"grupo": "I", "p1": "França", "ac1": true, "ex1": true, "p2": "Noruega", "ac2": true, "ex2": true}, {"grupo": "J", "p1": "Argentina", "ac1": true, "ex1": true, "p2": "Áustria", "ac2": true, "ex2": true}, {"grupo": "K", "p1": "Portugal", "ac1": true, "ex1": true, "p2": "Colômbia", "ac2": true, "ex2": true}, {"grupo": "L", "p1": "Inglaterra", "ac1": true, "ex1": true, "p2": "Croácia", "ac2": false, "ex2": false}], "posicao": 3, "premio": 85.0, "empate": true}, {"nome": "Léo Miller", "pts": 21, "exatos": 18, "detalhes": [{"grupo": "A", "p1": "México", "ac1": true, "ex1": true, "p2": "Coreia do Sul", "ac2": true, "ex2": true}, {"grupo": "B", "p1": "Suíça", "ac1": true, "ex1": false, "p2": "Canadá", "ac2": true, "ex2": false}, {"grupo": "C", "p1": "Brasil", "ac1": true, "ex1": true, "p2": "Marrocos", "ac2": true, "ex2": true}, {"grupo": "D", "p1": "Estados Unidos", "ac1": true, "ex1": true, "p2": "Austrália", "ac2": true, "ex2": true}, {"grupo": "E", "p1": "Alemanha", "ac1": true, "ex1": true, "p2": "Equador", "ac2": false, "ex2": false}, {"grupo": "F", "p1": "Holanda", "ac1": true, "ex1": true, "p2": "Japão", "ac2": true, "ex2": true}, {"grupo": "G", "p1": "Bélgica", "ac1": false, "ex1": false, "p2": "Egito", "ac2": true, "ex2": false}, {"grupo": "H", "p1": "Espanha", "ac1": true, "ex1": true, "p2": "Uruguai", "ac2": true, "ex2": true}, {"grupo": "I", "p1": "França", "ac1": true, "ex1": true, "p2": "Noruega", "ac2": true, "ex2": true}, {"grupo": "J", "p1": "Argentina", "ac1": true, "ex1": true, "p2": "Áustria", "ac2": true, "ex2": true}, {"grupo": "K", "p1": "Portugal", "ac1": true, "ex1": true, "p2": "Colômbia", "ac2": true, "ex2": true}, {"grupo": "L", "p1": "Inglaterra", "ac1": true, "ex1": true, "p2": "Croácia", "ac2": false, "ex2": false}], "posicao": 3, "premio": 85.0, "empate": true}, {"nome": "Marcelo Assaf", "pts": 20, "exatos": 17, "detalhes": [{"grupo": "A", "p1": "México", "ac1": true, "ex1": true, "p2": "Coreia do Sul", "ac2": true, "ex2": true}, {"grupo": "B", "p1": "Suíça", "ac1": true, "ex1": false, "p2": "Canadá", "ac2": true, "ex2": false}, {"grupo": "C", "p1": "Brasil", "ac1": true, "ex1": true, "p2": "Marrocos", "ac2": true, "ex2": true}, {"grupo": "D", "p1": "Estados Unidos", "ac1": true, "ex1": true, "p2": "Austrália", "ac2": true, "ex2": true}, {"grupo": "E", "p1": "Alemanha", "ac1": true, "ex1": true, "p2": "Equador", "ac2": false, "ex2": false}, {"grupo": "F", "p1": "Holanda", "ac1": true, "ex1": true, "p2": "Japão", "ac2": true, "ex2": true}, {"grupo": "G", "p1": "Bélgica", "ac1": false, "ex1": false, "p2": "Egito", "ac2": true, "ex2": false}, {"grupo": "H", "p1": "Espanha", "ac1": true, "ex1": true, "p2": "Uruguai", "ac2": true, "ex2": true}, {"grupo": "I", "p1": "França", "ac1": true, "ex1": true, "p2": "Noruega", "ac2": true, "ex2": true}, {"grupo": "J", "p1": "Argentina", "ac1": true, "ex1": true, "p2": "Argélia", "ac2": false, "ex2": false}, {"grupo": "K", "p1": "Portugal", "ac1": true, "ex1": true, "p2": "Colômbia", "ac2": true, "ex2": true}, {"grupo": "L", "p1": "Inglaterra", "ac1": true, "ex1": true, "p2": "Croácia", "ac2": false, "ex2": false}], "posicao": 5, "premio": 85.0, "empate": false}, {"nome": "BRUNNO DE LUCA", "pts": 19, "exatos": 16, "detalhes": [{"grupo": "A", "p1": "México", "ac1": true, "ex1": true, "p2": "Coreia do Sul", "ac2": true, "ex2": true}, {"grupo": "B", "p1": "Suíça", "ac1": true, "ex1": false, "p2": "Canadá", "ac2": true, "ex2": false}, {"grupo": "C", "p1": "Brasil", "ac1": true, "ex1": true, "p2": "Marrocos", "ac2": true, "ex2": true}, {"grupo": "D", "p1": "Estados Unidos", "ac1": true, "ex1": true, "p2": "Turquia", "ac2": false, "ex2": false}, {"grupo": "E", "p1": "Alemanha", "ac1": true, "ex1": true, "p2": "Costa do Marfim", "ac2": true, "ex2": true}, {"grupo": "F", "p1": "Holanda", "ac1": true, "ex1": true, "p2": "Suécia", "ac2": false, "ex2": false}, {"grupo": "G", "p1": "Bélgica", "ac1": false, "ex1": false, "p2": "Egito", "ac2": true, "ex2": false}, {"grupo": "H", "p1": "Espanha", "ac1": true, "ex1": true, "p2": "Uruguai", "ac2": true, "ex2": true}, {"grupo": "I", "p1": "França", "ac1": true, "ex1": true, "p2": "Senegal", "ac2": false, "ex2": false}, {"grupo": "J", "p1": "Argentina", "ac1": true, "ex1": true, "p2": "Áustria", "ac2": true, "ex2": true}, {"grupo": "K", "p1": "Portugal", "ac1": true, "ex1": true, "p2": "Colômbia", "ac2": true, "ex2": true}, {"grupo": "L", "p1": "Inglaterra", "ac1": true, "ex1": true, "p2": "Croácia", "ac2": false, "ex2": false}], "posicao": 6, "premio": 0.0, "empate": true}, {"nome": "Marco Viana", "pts": 19, "exatos": 16, "detalhes": [{"grupo": "A", "p1": "Coreia do Sul", "ac1": true, "ex1": false, "p2": "México", "ac2": true, "ex2": false}, {"grupo": "B", "p1": "Canadá", "ac1": true, "ex1": true, "p2": "Suíça", "ac2": true, "ex2": true}, {"grupo": "C", "p1": "Brasil", "ac1": true, "ex1": true, "p2": "Marrocos", "ac2": true, "ex2": true}, {"grupo": "D", "p1": "Estados Unidos", "ac1": true, "ex1": true, "p2": "Turquia", "ac2": false, "ex2": false}, {"grupo": "E", "p1": "Alemanha", "ac1": true, "ex1": true, "p2": "Equador", "ac2": false, "ex2": false}, {"grupo": "F", "p1": "Holanda", "ac1": true, "ex1": true, "p2": "Japão", "ac2": true, "ex2": true}, {"grupo": "G", "p1": "Bélgica", "ac1": false, "ex1": false, "p2": "Egito", "ac2": true, "ex2": false}, {"grupo": "H", "p1": "Espanha", "ac1": true, "ex1": true, "p2": "Uruguai", "ac2": true, "ex2": true}, {"grupo": "I", "p1": "França", "ac1": true, "ex1": true, "p2": "Senegal", "ac2": false, "ex2": false}, {"grupo": "J", "p1": "Argentina", "ac1": true, "ex1": true, "p2": "Áustria", "ac2": true, "ex2": true}, {"grupo": "K", "p1": "Portugal", "ac1": true, "ex1": true, "p2": "Colômbia", "ac2": true, "ex2": true}, {"grupo": "L", "p1": "Inglaterra", "ac1": true, "ex1": true, "p2": "Croácia", "ac2": false, "ex2": false}], "posicao": 6, "premio": 0.0, "empate": true}, {"nome": "Helve Gorini", "pts": 18, "exatos": 15, "detalhes": [{"grupo": "A", "p1": "México", "ac1": true, "ex1": true, "p2": "Tchéquia", "ac2": false, "ex2": false}, {"grupo": "B", "p1": "Bósnia e Herzegovina", "ac1": false, "ex1": false, "p2": "Suíça", "ac2": true, "ex2": true}, {"grupo": "C", "p1": "Brasil", "ac1": true, "ex1": true, "p2": "Marrocos", "ac2": true, "ex2": true}, {"grupo": "D", "p1": "Paraguai", "ac1": false, "ex1": false, "p2": "Estados Unidos", "ac2": true, "ex2": false}, {"grupo": "E", "p1": "Alemanha", "ac1": true, "ex1": true, "p2": "Equador", "ac2": false, "ex2": false}, {"grupo": "F", "p1": "Suécia", "ac1": false, "ex1": false, "p2": "Holanda", "ac2": true, "ex2": false}, {"grupo": "G", "p1": "Bélgica", "ac1": false, "ex1": false, "p2": "Egito", "ac2": true, "ex2": false}, {"grupo": "H", "p1": "Espanha", "ac1": true, "ex1": true, "p2": "Uruguai", "ac2": true, "ex2": true}, {"grupo": "I", "p1": "França", "ac1": true, "ex1": true, "p2": "Noruega", "ac2": true, "ex2": true}, {"grupo": "J", "p1": "Argentina", "ac1": true, "ex1": true, "p2": "Áustria", "ac2": true, "ex2": true}, {"grupo": "K", "p1": "Portugal", "ac1": true, "ex1": true, "p2": "Colômbia", "ac2": true, "ex2": true}, {"grupo": "L", "p1": "Inglaterra", "ac1": true, "ex1": true, "p2": "Gana", "ac2": true, "ex2": true}], "posicao": 8, "premio": 0.0, "empate": false}, {"nome": "Barão", "pts": 18, "exatos": 14, "detalhes": [{"grupo": "A", "p1": "África do Sul", "ac1": false, "ex1": false, "p2": "México", "ac2": true, "ex2": false}, {"grupo": "B", "p1": "Suíça", "ac1": true, "ex1": false, "p2": "Bósnia e Herzegovina", "ac2": false, "ex2": false}, {"grupo": "C", "p1": "Brasil", "ac1": true, "ex1": true, "p2": "Escócia", "ac2": false, "ex2": false}, {"grupo": "D", "p1": "Paraguai", "ac1": false, "ex1": false, "p2": "Estados Unidos", "ac2": true, "ex2": false}, {"grupo": "E", "p1": "Alemanha", "ac1": true, "ex1": true, "p2": "Costa do Marfim", "ac2": true, "ex2": true}, {"grupo": "F", "p1": "Holanda", "ac1": true, "ex1": true, "p2": "Japão", "ac2": true, "ex2": true}, {"grupo": "G", "p1": "Bélgica", "ac1": false, "ex1": false, "p2": "Egito", "ac2": true, "ex2": false}, {"grupo": "H", "p1": "Espanha", "ac1": true, "ex1": true, "p2": "Uruguai", "ac2": true, "ex2": true}, {"grupo": "I", "p1": "França", "ac1": true, "ex1": true, "p2": "Senegal", "ac2": false, "ex2": false}, {"grupo": "J", "p1": "Argentina", "ac1": true, "ex1": true, "p2": "Áustria", "ac2": true, "ex2": true}, {"grupo": "K", "p1": "Portugal", "ac1": true, "ex1": true, "p2": "Colômbia", "ac2": true, "ex2": true}, {"grupo": "L", "p1": "Inglaterra", "ac1": true, "ex1": true, "p2": "Gana", "ac2": true, "ex2": true}], "posicao": 9, "premio": 0.0, "empate": true}, {"nome": "James matheson hunter", "pts": 18, "exatos": 14, "detalhes": [{"grupo": "A", "p1": "México", "ac1": true, "ex1": true, "p2": "Tchéquia", "ac2": false, "ex2": false}, {"grupo": "B", "p1": "Suíça", "ac1": true, "ex1": false, "p2": "Canadá", "ac2": true, "ex2": false}, {"grupo": "C", "p1": "Brasil", "ac1": true, "ex1": true, "p2": "Escócia", "ac2": false, "ex2": false}, {"grupo": "D", "p1": "Paraguai", "ac1": false, "ex1": false, "p2": "Estados Unidos", "ac2": true, "ex2": false}, {"grupo": "E", "p1": "Alemanha", "ac1": true, "ex1": true, "p2": "Equador", "ac2": false, "ex2": false}, {"grupo": "F", "p1": "Holanda", "ac1": true, "ex1": true, "p2": "Japão", "ac2": true, "ex2": true}, {"grupo": "G", "p1": "Bélgica", "ac1": false, "ex1": false, "p2": "Egito", "ac2": true, "ex2": false}, {"grupo": "H", "p1": "Espanha", "ac1": true, "ex1": true, "p2": "Uruguai", "ac2": true, "ex2": true}, {"grupo": "I", "p1": "França", "ac1": true, "ex1": true, "p2": "Noruega", "ac2": true, "ex2": true}, {"grupo": "J", "p1": "Argentina", "ac1": true, "ex1": true, "p2": "Áustria", "ac2": true, "ex2": true}, {"grupo": "K", "p1": "Portugal", "ac1": true, "ex1": true, "p2": "Colômbia", "ac2": true, "ex2": true}, {"grupo": "L", "p1": "Inglaterra", "ac1": true, "ex1": true, "p2": "Croácia", "ac2": false, "ex2": false}], "posicao": 9, "premio": 0.0, "empate": true}, {"nome": "Leonardo", "pts": 18, "exatos": 12, "detalhes": [{"grupo": "A", "p1": "Coreia do Sul", "ac1": true, "ex1": false, "p2": "México", "ac2": true, "ex2": false}, {"grupo": "B", "p1": "Suíça", "ac1": true, "ex1": false, "p2": "Catar", "ac2": false, "ex2": false}, {"grupo": "C", "p1": "Brasil", "ac1": true, "ex1": true, "p2": "Marrocos", "ac2": true, "ex2": true}, {"grupo": "D", "p1": "Estados Unidos", "ac1": true, "ex1": true, "p2": "Turquia", "ac2": false, "ex2": false}, {"grupo": "E", "p1": "Alemanha", "ac1": true, "ex1": true, "p2": "Equador", "ac2": false, "ex2": false}, {"grupo": "F", "p1": "Holanda", "ac1": true, "ex1": true, "p2": "Suécia", "ac2": false, "ex2": false}, {"grupo": "G", "p1": "Bélgica", "ac1": false, "ex1": false, "p2": "Egito", "ac2": true, "ex2": false}, {"grupo": "H", "p1": "Uruguai", "ac1": true, "ex1": false, "p2": "Espanha", "ac2": true, "ex2": false}, {"grupo": "I", "p1": "França", "ac1": true, "ex1": true, "p2": "Noruega", "ac2": true, "ex2": true}, {"grupo": "J", "p1": "Argentina", "ac1": true, "ex1": true, "p2": "Áustria", "ac2": true, "ex2": true}, {"grupo": "K", "p1": "Portugal", "ac1": true, "ex1": true, "p2": "Colômbia", "ac2": true, "ex2": true}, {"grupo": "L", "p1": "Inglaterra", "ac1": true, "ex1": true, "p2": "Croácia", "ac2": false, "ex2": false}], "posicao": 11, "premio": 0.0, "empate": false}, {"nome": "Panesi", "pts": 18, "exatos": 11, "detalhes": [{"grupo": "A", "p1": "África do Sul", "ac1": false, "ex1": false, "p2": "México", "ac2": true, "ex2": false}, {"grupo": "B", "p1": "Catar", "ac1": false, "ex1": false, "p2": "Suíça", "ac2": true, "ex2": true}, {"grupo": "C", "p1": "Brasil", "ac1": true, "ex1": true, "p2": "Marrocos", "ac2": true, "ex2": true}, {"grupo": "D", "p1": "Turquia", "ac1": false, "ex1": false, "p2": "Estados Unidos", "ac2": true, "ex2": false}, {"grupo": "E", "p1": "Costa do Marfim", "ac1": true, "ex1": false, "p2": "Alemanha", "ac2": true, "ex2": false}, {"grupo": "F", "p1": "Holanda", "ac1": true, "ex1": true, "p2": "Suécia", "ac2": false, "ex2": false}, {"grupo": "G", "p1": "Bélgica", "ac1": false, "ex1": false, "p2": "Egito", "ac2": true, "ex2": false}, {"grupo": "H", "p1": "Espanha", "ac1": true, "ex1": true, "p2": "Uruguai", "ac2": true, "ex2": true}, {"grupo": "I", "p1": "França", "ac1": true, "ex1": true, "p2": "Noruega", "ac2": true, "ex2": true}, {"grupo": "J", "p1": "Argentina", "ac1": true, "ex1": true, "p2": "Argélia", "ac2": false, "ex2": false}, {"grupo": "K", "p1": "Colômbia", "ac1": true, "ex1": false, "p2": "Portugal", "ac2": true, "ex2": false}, {"grupo": "L", "p1": "Inglaterra", "ac1": true, "ex1": true, "p2": "Gana", "ac2": true, "ex2": true}], "posicao": 12, "premio": 0.0, "empate": false}, {"nome": "Hugo Matheson Drummond", "pts": 17, "exatos": 14, "detalhes": [{"grupo": "A", "p1": "México", "ac1": true, "ex1": true, "p2": "Tchéquia", "ac2": false, "ex2": false}, {"grupo": "B", "p1": "Suíça", "ac1": true, "ex1": false, "p2": "Catar", "ac2": false, "ex2": false}, {"grupo": "C", "p1": "Brasil", "ac1": true, "ex1": true, "p2": "Escócia", "ac2": false, "ex2": false}, {"grupo": "D", "p1": "Turquia", "ac1": false, "ex1": false, "p2": "Estados Unidos", "ac2": true, "ex2": false}, {"grupo": "E", "p1": "Alemanha", "ac1": true, "ex1": true, "p2": "Costa do Marfim", "ac2": true, "ex2": true}, {"grupo": "F", "p1": "Holanda", "ac1": true, "ex1": true, "p2": "Suécia", "ac2": false, "ex2": false}, {"grupo": "G", "p1": "Bélgica", "ac1": false, "ex1": false, "p2": "Egito", "ac2": true, "ex2": false}, {"grupo": "H", "p1": "Espanha", "ac1": true, "ex1": true, "p2": "Uruguai", "ac2": true, "ex2": true}, {"grupo": "I", "p1": "França", "ac1": true, "ex1": true, "p2": "Noruega", "ac2": true, "ex2": true}, {"grupo": "J", "p1": "Argentina", "ac1": true, "ex1": true, "p2": "Áustria", "ac2": true, "ex2": true}, {"grupo": "K", "p1": "Portugal", "ac1": true, "ex1": true, "p2": "Colômbia", "ac2": true, "ex2": true}, {"grupo": "L", "p1": "Inglaterra", "ac1": true, "ex1": true, "p2": "Croácia", "ac2": false, "ex2": false}], "posicao": 13, "premio": 0.0, "empate": true}, {"nome": "João Pedro", "pts": 17, "exatos": 14, "detalhes": [{"grupo": "A", "p1": "Tchéquia", "ac1": false, "ex1": false, "p2": "México", "ac2": true, "ex2": false}, {"grupo": "B", "p1": "Suíça", "ac1": true, "ex1": false, "p2": "Bósnia e Herzegovina", "ac2": false, "ex2": false}, {"grupo": "C", "p1": "Brasil", "ac1": true, "ex1": true, "p2": "Marrocos", "ac2": true, "ex2": true}, {"grupo": "D", "p1": "Turquia", "ac1": false, "ex1": false, "p2": "Paraguai", "ac2": false, "ex2": false}, {"grupo": "E", "p1": "Alemanha", "ac1": true, "ex1": true, "p2": "Equador", "ac2": false, "ex2": false}, {"grupo": "F", "p1": "Holanda", "ac1": true, "ex1": true, "p2": "Japão", "ac2": true, "ex2": true}, {"grupo": "G", "p1": "Bélgica", "ac1": false, "ex1": false, "p2": "Egito", "ac2": true, "ex2": false}, {"grupo": "H", "p1": "Espanha", "ac1": true, "ex1": true, "p2": "Uruguai", "ac2": true, "ex2": true}, {"grupo": "I", "p1": "França", "ac1": true, "ex1": true, "p2": "Noruega", "ac2": true, "ex2": true}, {"grupo": "J", "p1": "Argentina", "ac1": true, "ex1": true, "p2": "Áustria", "ac2": true, "ex2": true}, {"grupo": "K", "p1": "Portugal", "ac1": true, "ex1": true, "p2": "Colômbia", "ac2": true, "ex2": true}, {"grupo": "L", "p1": "Inglaterra", "ac1": true, "ex1": true, "p2": "Croácia", "ac2": false, "ex2": false}], "posicao": 13, "premio": 0.0, "empate": true}, {"nome": "Matheus Cruz", "pts": 17, "exatos": 12, "detalhes": [{"grupo": "A", "p1": "México", "ac1": true, "ex1": true, "p2": "Coreia do Sul", "ac2": true, "ex2": true}, {"grupo": "B", "p1": "Suíça", "ac1": true, "ex1": false, "p2": "Bósnia e Herzegovina", "ac2": false, "ex2": false}, {"grupo": "C", "p1": "Brasil", "ac1": true, "ex1": true, "p2": "Marrocos", "ac2": true, "ex2": true}, {"grupo": "D", "p1": "Paraguai", "ac1": false, "ex1": false, "p2": "Estados Unidos", "ac2": true, "ex2": false}, {"grupo": "E", "p1": "Alemanha", "ac1": true, "ex1": true, "p2": "Equador", "ac2": false, "ex2": false}, {"grupo": "F", "p1": "Holanda", "ac1": true, "ex1": true, "p2": "Suécia", "ac2": false, "ex2": false}, {"grupo": "G", "p1": "Bélgica", "ac1": false, "ex1": false, "p2": "Egito", "ac2": true, "ex2": false}, {"grupo": "H", "p1": "Espanha", "ac1": true, "ex1": true, "p2": "Uruguai", "ac2": true, "ex2": true}, {"grupo": "I", "p1": "França", "ac1": true, "ex1": true, "p2": "Noruega", "ac2": true, "ex2": true}, {"grupo": "J", "p1": "Argentina", "ac1": true, "ex1": true, "p2": "Argélia", "ac2": false, "ex2": false}, {"grupo": "K", "p1": "Colômbia", "ac1": true, "ex1": false, "p2": "Portugal", "ac2": true, "ex2": false}, {"grupo": "L", "p1": "Inglaterra", "ac1": true, "ex1": true, "p2": "Croácia", "ac2": false, "ex2": false}], "posicao": 15, "premio": 0.0, "empate": false}, {"nome": "Thiago Moreira", "pts": 16, "exatos": 15, "detalhes": [{"grupo": "A", "p1": "México", "ac1": true, "ex1": true, "p2": "África do Sul", "ac2": false, "ex2": false}, {"grupo": "B", "p1": "Canadá", "ac1": true, "ex1": true, "p2": "Bósnia e Herzegovina", "ac2": false, "ex2": false}, {"grupo": "C", "p1": "Brasil", "ac1": true, "ex1": true, "p2": "Marrocos", "ac2": true, "ex2": true}, {"grupo": "D", "p1": "Estados Unidos", "ac1": true, "ex1": true, "p2": "Paraguai", "ac2": false, "ex2": false}, {"grupo": "E", "p1": "Alemanha", "ac1": true, "ex1": true, "p2": "Equador", "ac2": false, "ex2": false}, {"grupo": "F", "p1": "Holanda", "ac1": true, "ex1": true, "p2": "Japão", "ac2": true, "ex2": true}, {"grupo": "G", "p1": "Bélgica", "ac1": false, "ex1": false, "p2": "Irã", "ac2": true, "ex2": true}, {"grupo": "H", "p1": "Espanha", "ac1": true, "ex1": true, "p2": "Uruguai", "ac2": true, "ex2": true}, {"grupo": "I", "p1": "França", "ac1": true, "ex1": true, "p2": "Senegal", "ac2": false, "ex2": false}, {"grupo": "J", "p1": "Argentina", "ac1": true, "ex1": true, "p2": "Argélia", "ac2": false, "ex2": false}, {"grupo": "K", "p1": "Portugal", "ac1": true, "ex1": true, "p2": "Colômbia", "ac2": true, "ex2": true}, {"grupo": "L", "p1": "Croácia", "ac1": false, "ex1": false, "p2": "Inglaterra", "ac2": true, "ex2": false}], "posicao": 16, "premio": 0.0, "empate": false}, {"nome": "Bruno Carvalho", "pts": 15, "exatos": 14, "detalhes": [{"grupo": "A", "p1": "México", "ac1": true, "ex1": true, "p2": "Tchéquia", "ac2": false, "ex2": false}, {"grupo": "B", "p1": "Canadá", "ac1": true, "ex1": true, "p2": "Bósnia e Herzegovina", "ac2": false, "ex2": false}, {"grupo": "C", "p1": "Brasil", "ac1": true, "ex1": true, "p2": "Marrocos", "ac2": true, "ex2": true}, {"grupo": "D", "p1": "Estados Unidos", "ac1": true, "ex1": true, "p2": "Turquia", "ac2": false, "ex2": false}, {"grupo": "E", "p1": "Alemanha", "ac1": true, "ex1": true, "p2": "Equador", "ac2": false, "ex2": false}, {"grupo": "F", "p1": "Holanda", "ac1": true, "ex1": true, "p2": "Suécia", "ac2": false, "ex2": false}, {"grupo": "G", "p1": "Bélgica", "ac1": false, "ex1": false, "p2": "Egito", "ac2": true, "ex2": false}, {"grupo": "H", "p1": "Espanha", "ac1": true, "ex1": true, "p2": "Uruguai", "ac2": true, "ex2": true}, {"grupo": "I", "p1": "França", "ac1": true, "ex1": true, "p2": "Senegal", "ac2": false, "ex2": false}, {"grupo": "J", "p1": "Argentina", "ac1": true, "ex1": true, "p2": "Argélia", "ac2": false, "ex2": false}, {"grupo": "K", "p1": "Portugal", "ac1": true, "ex1": true, "p2": "Colômbia", "ac2": true, "ex2": true}, {"grupo": "L", "p1": "Inglaterra", "ac1": true, "ex1": true, "p2": "Croácia", "ac2": false, "ex2": false}], "posicao": 17, "premio": 0.0, "empate": false}], "total_pool": 850.0, "valor_cota": 50.0};
+var GRUPOS_COLOR = {"A": "#c1121f", "B": "#2a9d8f", "C": "#e07a2f", "D": "#457b9d", "E": "#6d4c41", "F": "#8338ec", "G": "#e76f51", "H": "#d62828", "I": "#2b9348", "J": "#0077b6", "K": "#6a0572", "L": "#b5451b"};
+var GRUPOS_L = Object.keys(GRUPOS_COLOR);
+
+function fmtR(v){ return 'R$ ' + v.toFixed(2).replace('.', ','); }
+
+function montarPremios(){
+  var tiers = [{pct:70, label:'1º lugar'}, {pct:20, label:'2º lugar'}, {pct:10, label:'3º lugar'}];
+  var html='';
+  tiers.forEach(function(t){
+    html+='<div class="premio-card"><div class="pct">'+t.label+' · '+t.pct+'%</div><div class="val">'+fmtR(DATA.total_pool*t.pct/100)+'</div></div>';
+  });
+  document.getElementById('premios').innerHTML = html +
+    '<div style="grid-column:1/-1;text-align:center;font-size:.78em;color:#999;margin-top:4px">Pool total: '+DATA.ranking.length+' apostadores x '+fmtR(DATA.valor_cota)+' = '+fmtR(DATA.total_pool)+'</div>';
+}
+
+function montarPodio(){
+  var medalhas=['🥇','🥈','🥉'];
+  var classes=['p1','p2','p3'];
+  var top3 = DATA.ranking.filter(function(r){ return r.posicao<=3; });
+  var html='';
+  top3.slice(0,6).forEach(function(r,i){
+    var cls = classes[Math.min(r.posicao-1,2)];
+    html+='<div class="pod-card '+cls+'">'+(r.empate?'<span class="empate-tag">EMPATE</span>':'')+
+      '<div class="pod-medal">'+medalhas[r.posicao-1]+'</div>'+
+      '<div class="pod-nome">'+r.nome+'</div>'+
+      '<div class="pod-pts">'+r.pts+' pts</div>'+
+      '<div class="pod-pct">'+Math.round(r.pts/24*100)+'% de acerto · '+r.exatos+' exatos</div>'+
+      '<div class="pod-premio">'+fmtR(r.premio)+'</div></div>';
+  });
+  document.getElementById('podio').innerHTML = html;
+}
+
+function montarLista(filtro){
+  var lista = document.getElementById('lista');
+  filtro = (filtro||'').toLowerCase();
+  var html='';
+  DATA.ranking.forEach(function(r,i){
+    if(filtro && r.nome.toLowerCase().indexOf(filtro)<0) return;
+    var pct = Math.round(r.pts/24*100);
+    var gruposHtml='';
+    r.detalhes.forEach(function(det){
+      var cor = GRUPOS_COLOR[det.grupo];
+      var cls1 = det.ex1 ? 'exato' : (det.ac1 ? 'ok' : 'no');
+      var cls2 = det.ex2 ? 'exato' : (det.ac2 ? 'ok' : 'no');
+      var icone1 = det.ex1 ? '🟡' : (det.ac1 ? '✅' : '⬜');
+      var icone2 = det.ex2 ? '🟡' : (det.ac2 ? '✅' : '⬜');
+      gruposHtml+='<div class="grupo-mini"><span class="gtag" style="background:'+cor+'">Grupo '+det.grupo+'</span>'+
+        '<div class="pick"><span class="icone">'+icone1+'</span><span class="'+cls1+'">'+(det.p1||'—')+'</span></div>'+
+        '<div class="pick"><span class="icone">'+icone2+'</span><span class="'+cls2+'">'+(det.p2||'—')+'</span></div>'+
+        '</div>';
+    });
+    var premioTxt = r.premio>0 ? fmtR(r.premio) : '—';
+    html+='<div class="linha-part'+(r.premio>0?' premiada':'')+'" id="lp_'+i+'">'+
+      '<div class="linha-cabeca" onclick="toggle('+i+')">'+
+        '<span class="linha-pos">'+r.posicao+'º'+(r.empate?' 🟰':'')+'</span>'+
+        '<span class="linha-nome">'+r.nome+'</span>'+
+        '<span class="linha-pts">'+r.pts+'/24</span>'+
+        '<span class="linha-exatos">'+r.exatos+' exatos</span>'+
+        '<span class="linha-pct">'+pct+'%</span>'+
+        '<span class="linha-premio">'+premioTxt+'</span>'+
+        '<span class="linha-seta">▼</span>'+
+      '</div>'+
+      '<div class="detalhe"><p style="font-size:.82em;color:#bbb;margin-bottom:6px">Time apostado em cada grupo (1º e 2º palpite) — ✅ classificado agora, 🟡 posição exata:</p>'+
+      '<div class="grupos-grid">'+gruposHtml+'</div></div>'+
+    '</div>';
+  });
+  lista.innerHTML = html || '<p style="color:#888;padding:10px">Nenhum participante encontrado.</p>';
+}
+
+function toggle(i){
+  document.getElementById('lp_'+i).classList.toggle('aberta');
+}
+
+function montarTabelaGrupos(){
+  var html='';
+  GRUPOS_L.forEach(function(gl){
+    html+='<tr><td style="color:'+GRUPOS_COLOR[gl]+'">Grupo '+gl+'</td><td>'+DATA.reais[gl].p1+'</td><td>'+DATA.reais[gl].p2+'</td></tr>';
+  });
+  document.getElementById('tabelaGrupos').innerHTML = html;
+}
+
+document.getElementById('busca').addEventListener('input', function(e){ montarLista(e.target.value); });
+
+montarPremios();
+montarPodio();
+montarLista('');
+montarTabelaGrupos();
+</script>
+</body>
+</html>
