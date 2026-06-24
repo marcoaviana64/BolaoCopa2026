@@ -20,17 +20,19 @@ header p{color:#ccc;font-size:.92em}
 .premio-card{background:rgba(0,0,0,.2);border-radius:10px;padding:12px;text-align:center}
 .premio-card .pct{color:#FFD700;font-weight:800;font-size:1.2em}
 .premio-card .val{color:#fff;font-size:.95em;margin-top:2px}
-.pódio{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;margin-top:6px}
-.pod-card{border-radius:12px;padding:18px 14px;text-align:center;position:relative}
-.pod-card.p1{background:rgba(255,215,0,.16);border:1px solid rgba(255,215,0,.45);order:2}
-.pod-card.p2{background:rgba(192,192,192,.13);border:1px solid rgba(192,192,192,.35);order:1;align-self:end}
-.pod-card.p3{background:rgba(205,127,50,.13);border:1px solid rgba(205,127,50,.3);order:3;align-self:end}
-.pod-medal{font-size:2.2em}
-.pod-nome{font-weight:700;font-size:1.0em;margin:6px 0 2px;color:#fff}
+#podio{display:flex;flex-direction:column;gap:12px}
+.tier-row{display:flex;align-items:stretch;gap:16px}
+.tier-label{font-weight:800;color:#FFD700;font-size:.95em;min-width:78px;display:flex;align-items:center;flex-shrink:0}
+.tier-cards{display:flex;gap:12px;flex-wrap:wrap;flex:1}
+.tier-card{position:relative;border-radius:12px;padding:14px 16px;text-align:center;min-width:150px;flex:1 1 150px}
+.tier-card.tier-1{background:rgba(255,215,0,.16);border:1px solid rgba(255,215,0,.45)}
+.tier-card.tier-2{background:rgba(192,192,192,.13);border:1px solid rgba(192,192,192,.35)}
+.tier-card.tier-3{background:rgba(205,127,50,.13);border:1px solid rgba(205,127,50,.3)}
+.pod-nome{font-weight:700;font-size:1.0em;margin:0 0 2px;color:#fff}
 .pod-pts{font-weight:900;color:#FFD700;font-size:1.2em}
 .pod-pct{font-size:.76em;color:#aaa}
 .pod-premio{font-size:.8em;color:#7CFC9A;font-weight:700;margin-top:4px}
-.empate-tag{position:absolute;top:8px;right:8px;background:#ffb347;color:#000;font-size:.65em;font-weight:800;padding:2px 7px;border-radius:8px}
+.empate-tag{position:absolute;top:6px;right:6px;background:#ffb347;color:#000;font-size:.62em;font-weight:800;padding:2px 6px;border-radius:8px}
 .busca{width:100%;padding:11px 16px;border-radius:10px;border:1px solid rgba(255,255,255,.2);background:rgba(255,255,255,.08);color:#fff;font-size:.92em;margin-bottom:14px}
 .busca::placeholder{color:#999}
 .busca:focus{outline:none;border-color:#FFD700}
@@ -61,7 +63,7 @@ header p{color:#ccc;font-size:.92em}
 .tabela-grupos th{background:rgba(255,215,0,.15);color:#FFD700;padding:8px;text-align:center}
 .tabela-grupos td{padding:7px 8px;text-align:center;border-bottom:1px solid rgba(255,255,255,.08)}
 .tabela-grupos td:first-child{text-align:left;font-weight:700}
-@media(max-width:640px){.pódio,.premios{grid-template-columns:1fr}.pod-card{order:0!important;align-self:auto!important}.linha-pos{width:auto}}
+@media(max-width:640px){.premios{grid-template-columns:1fr}.tier-row{flex-direction:column;gap:6px}.tier-label{min-width:auto}.linha-pos{width:auto}}
 </style>
 </head>
 <body>
@@ -81,7 +83,7 @@ header p{color:#ccc;font-size:.92em}
 
   <div class="secao">
     <h2>🥇🥈🥉 Pódio atual</h2>
-    <div class="pódio" id="podio"></div>
+    <div id="podio"></div>
   </div>
 
   <div class="secao">
@@ -118,18 +120,25 @@ function montarPremios(){
 }
 
 function montarPodio(){
-  var medalhas=['🥇','🥈','🥉'];
-  var classes=['p1','p2','p3'];
-  var top3 = DATA.ranking.filter(function(r){ return r.posicao<=3; });
+  var medalhas={1:'🥇',2:'🥈',3:'🥉'};
+  var tiers = {};
+  DATA.ranking.forEach(function(r){
+    if(r.posicao<=3){
+      tiers[r.posicao] = tiers[r.posicao] || [];
+      tiers[r.posicao].push(r);
+    }
+  });
   var html='';
-  top3.slice(0,6).forEach(function(r,i){
-    var cls = classes[Math.min(r.posicao-1,2)];
-    html+='<div class="pod-card '+cls+'">'+(r.empate?'<span class="empate-tag">EMPATE</span>':'')+
-      '<div class="pod-medal">'+medalhas[r.posicao-1]+'</div>'+
-      '<div class="pod-nome">'+r.nome+'</div>'+
-      '<div class="pod-pts">'+r.pts+' pts</div>'+
-      '<div class="pod-pct">'+Math.round(r.pts/24*100)+'% de acerto · '+r.exatos+' exatos</div>'+
-      '<div class="pod-premio">'+fmtR(r.premio)+'</div></div>';
+  [1,2,3].forEach(function(p){
+    if(!tiers[p]) return;
+    var cardsHtml = tiers[p].map(function(r){
+      return '<div class="tier-card tier-'+p+'">'+(r.empate?'<span class="empate-tag">EMPATE</span>':'')+
+        '<div class="pod-nome">'+r.nome+'</div>'+
+        '<div class="pod-pts">'+r.pts+' pts</div>'+
+        '<div class="pod-pct">'+Math.round(r.pts/24*100)+'% de acerto · '+r.exatos+' exatos</div>'+
+        '<div class="pod-premio">'+fmtR(r.premio)+'</div></div>';
+    }).join('');
+    html += '<div class="tier-row"><div class="tier-label">'+medalhas[p]+' '+p+'º lugar</div><div class="tier-cards">'+cardsHtml+'</div></div>';
   });
   document.getElementById('podio').innerHTML = html;
 }
