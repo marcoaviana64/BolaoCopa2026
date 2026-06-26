@@ -1,0 +1,539 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Organizador — Mata-Mata Copa 2026</title>
+<script src="https://cdn.sheetjs.com/xlsx-0.20.3/package/dist/xlsx.full.min.js"></script>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'Segoe UI',Arial,sans-serif;background:linear-gradient(135deg,#1a1a2e 0%,#16213e 50%,#0f3460 100%);min-height:100vh;padding:20px;color:#eee}
+.container{max-width:1200px;margin:0 auto}
+header{text-align:center;padding:24px 20px 16px}
+header h1{color:#FFD700;font-size:2.2em;text-shadow:2px 2px 6px rgba(0,0,0,.6);margin-bottom:5px}
+header p{color:#ccc;font-size:.92em}
+.secao{background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.12);border-radius:14px;padding:20px 22px;margin-bottom:22px}
+.secao h2{color:#FFD700;font-size:1.1em;margin-bottom:14px;display:flex;align-items:center;gap:8px}
+.cota{background:rgba(255,215,0,.1);border:1px solid rgba(255,215,0,.3);border-radius:10px;padding:10px 16px;margin-bottom:18px;color:#FFD700;font-size:.86em;font-weight:700;text-align:center}
+/* UPLOAD */
+.drop-area{border:2px dashed rgba(255,215,0,.4);border-radius:12px;padding:28px;text-align:center;cursor:pointer;transition:all .2s;background:rgba(255,215,0,.03)}
+.drop-area:hover,.drop-area.over{border-color:#FFD700;background:rgba(255,215,0,.08)}
+.drop-area p{color:#aaa;margin-top:8px;font-size:.88em}
+.drop-area .icon{font-size:2.5em}
+.btn-upload{margin-top:14px;padding:9px 20px;background:#FFD700;color:#003366;border:none;border-radius:8px;font-size:.9em;font-weight:700;cursor:pointer}
+#fileInput{display:none}
+.participantes-lista{display:flex;flex-wrap:wrap;gap:8px;margin-top:12px}
+.part-tag{background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.2);border-radius:20px;padding:5px 14px;font-size:.84em;display:flex;align-items:center;gap:6px;color:#eee}
+.part-tag .rm-btn{cursor:pointer;color:#ff6b6b;font-weight:700;font-size:1.1em;line-height:1}
+.part-tag .rm-btn:hover{color:#ff0000}
+/* TABS */
+.tabs{display:flex;gap:7px;margin-bottom:16px;flex-wrap:wrap}
+.tab-btn{flex:1;min-width:90px;padding:10px 8px;border:2px solid transparent;border-radius:9px;background:rgba(255,255,255,.08);color:#eee;font-weight:700;font-size:.82em;cursor:pointer;text-align:center;transition:.15s}
+.tab-btn.ativa{background:#FFD700;color:#003366;border-color:#FFD700}
+.tab-btn.bloqueada{opacity:.5}
+/* JOGOS - RESULTADOS REAIS */
+.bloqueio-card{background:rgba(255,255,255,.05);border:1px dashed rgba(255,255,255,.2);border-radius:14px;padding:26px 22px;text-align:center;color:#aaa}
+.bloqueio-card .lic{font-size:2em;margin-bottom:8px}
+.bloqueio-card h3{color:#FFD700;margin-bottom:6px;font-size:1.05em}
+.jogos-res-grid{display:flex;flex-direction:column;gap:10px}
+.jogo-res-card{background:rgba(255,255,255,.07);border:1px solid rgba(255,255,255,.12);border-radius:12px;padding:12px 16px}
+.jogo-res-card.travado{background:rgba(255,255,255,.03);border-style:dashed;opacity:.55}
+.jogo-res-top{font-size:.74em;color:#aaa;text-transform:uppercase;letter-spacing:.03em;margin-bottom:8px}
+.jogo-res-confronto{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+.jrc-time{flex:1;min-width:90px;font-weight:700;color:#eee;font-size:.92em}
+.jrc-time.dir{text-align:right}
+.placar-real-inputs{display:flex;align-items:center;gap:6px;flex-shrink:0}
+.placar-real-inputs input{width:50px;height:40px;text-align:center;font-size:1.1em;font-weight:700;border:1px solid rgba(255,255,255,.25);border-radius:8px;background:rgba(255,255,255,.95);color:#003366}
+.placar-real-inputs input:focus{outline:none;border-color:#FFD700}
+.placar-real-x{font-weight:700;color:#888}
+.pen-wrap{margin-top:9px;display:flex;align-items:center;gap:8px;font-size:.82em;color:#FFD700;background:rgba(255,215,0,.08);border-radius:8px;padding:6px 10px}
+.pen-wrap select{background:#fff;color:#003366;border:none;border-radius:6px;padding:4px 8px;font-weight:700;font-size:.88em}
+.tag-lock-res{color:#888;font-size:.82em;font-style:italic}
+/* TABELA COMPARATIVA */
+.tabela-wrap{overflow-x:auto;margin-top:4px}
+table{width:100%;border-collapse:collapse;font-size:.8em;min-width:600px}
+thead th{background:rgba(255,215,0,.15);color:#FFD700;padding:9px 8px;text-align:center;border-bottom:2px solid rgba(255,215,0,.3);white-space:nowrap;position:sticky;top:0}
+thead th:first-child{text-align:left;min-width:130px}
+thead th small{display:block;color:#ccc;font-weight:400;font-size:.85em;text-transform:none}
+tbody tr{border-bottom:1px solid rgba(255,255,255,.07)}
+tbody tr:hover{background:rgba(255,255,255,.06)}
+tbody td{padding:8px 8px;text-align:center;vertical-align:middle}
+tbody td:first-child{text-align:left;font-weight:600;color:#eee}
+.cel-bet{font-weight:700;color:#ddd}
+.cel-pts{display:block;font-size:.78em;font-weight:700;margin-top:2px}
+.cel-pts.p4,.cel-pts.p3{color:#69f0ae}
+.cel-pts.p2,.cel-pts.p1{color:#ffd54f}
+.cel-pts.p0{color:#777}
+.cel-vazio{color:#555}
+.cel-aguardando{color:#888;font-size:.76em;font-style:italic}
+td.pontos{font-weight:900;font-size:1.05em;color:#FFD700}
+/* RANKING */
+.ranking-lista{margin-top:4px}
+.rank-item{display:flex;align-items:center;gap:12px;padding:10px 14px;border-radius:10px;margin-bottom:8px;background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.08)}
+.rank-item.rank-1{background:rgba(255,215,0,.15);border-color:rgba(255,215,0,.4)}
+.rank-item.rank-2{background:rgba(192,192,192,.12);border-color:rgba(192,192,192,.3)}
+.rank-item.rank-3{background:rgba(205,127,50,.12);border-color:rgba(205,127,50,.25)}
+.rank-pos{font-size:1.4em;width:36px;text-align:center;flex-shrink:0}
+.rank-nome{flex:1;font-weight:700;font-size:.98em;color:#eee}
+.rank-pts{font-weight:900;font-size:1.15em;color:#FFD700}
+.rank-detail{font-size:.75em;color:#999;margin-top:1px}
+/* BOTÕES */
+.btns-acao{display:flex;gap:10px;flex-wrap:wrap;margin-top:14px}
+.btn-calcular{padding:11px 22px;background:linear-gradient(135deg,#FFD700,#FFA500);color:#003366;border:none;border-radius:9px;font-size:.95em;font-weight:700;cursor:pointer}
+.btn-exportar{padding:11px 22px;background:#1D6F42;color:#fff;border:none;border-radius:9px;font-size:.95em;font-weight:700;cursor:pointer}
+.btn-limpar{padding:11px 18px;background:rgba(255,100,100,.2);color:#ff8080;border:1px solid rgba(255,100,100,.3);border-radius:9px;font-size:.88em;font-weight:700;cursor:pointer}
+.empty-msg{color:#666;font-style:italic;font-size:.88em;padding:16px 0;text-align:center}
+.toast{position:fixed;bottom:26px;left:50%;transform:translateX(-50%) translateY(80px);background:#333;color:#fff;padding:9px 20px;border-radius:30px;font-size:.86em;font-weight:600;opacity:0;transition:all .3s;z-index:2000;pointer-events:none}
+.toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+.toast.ok{background:#2e7d32}
+.toast.err{background:#c62828}
+@media(max-width:600px){.btns-acao{flex-direction:column}.jrc-time.dir{text-align:left}}
+</style>
+</head>
+<body>
+<div class="container">
+  <div style="margin-bottom:10px">
+    <a href="index.html" style="display:inline-flex;align-items:center;gap:6px;color:rgba(255,255,255,.75);text-decoration:none;font-size:.83em;font-weight:600;background:rgba(0,0,0,.25);padding:6px 13px;border-radius:20px;border:1px solid rgba(255,255,255,.2);transition:opacity .2s" onmouseover="this.style.opacity='.7'" onmouseout="this.style.opacity='1'">‹ Menu principal</a>
+  </div>
+  <header>
+    <h1>📋 Organizador — Mata-Mata</h1>
+    <p>Copa do Mundo 2026 &mdash; Consolide as apostas de placar e calcule os pontos, rodada a rodada</p>
+  </header>
+
+  <div class="cota">💰 Cota desta fase: R$ 50 por participante &mdash; pontuação: <strong>2 pts por acertar o vencedor + 1 pt por seleção com gols certos (até 4 pts/jogo)</strong></div>
+
+  <!-- PASSO 1: IMPORTAR ARQUIVOS -->
+  <div class="secao">
+    <h2>📥 Passo 1 — Importar apostas dos participantes</h2>
+    <div class="drop-area" id="dropArea" onclick="document.getElementById('fileInput').click()" ondragover="ev(event)" ondrop="drop(event)">
+      <div class="icon">📂</div>
+      <strong style="color:#FFD700">Clique ou arraste os arquivos .xlsx dos participantes</strong>
+      <p>Aceita os arquivos exportados pelo formulário "Apostas — Mata-Mata" (aba APOSTA_16AVOS). Pode importar vários de uma vez.</p>
+      <button class="btn-upload" onclick="event.stopPropagation();document.getElementById('fileInput').click()">Selecionar arquivos</button>
+    </div>
+    <input type="file" id="fileInput" accept=".xlsx" multiple onchange="lerArquivos(event)">
+    <div class="participantes-lista" id="partLista"></div>
+  </div>
+
+  <!-- PASSO 2: RESULTADOS REAIS -->
+  <div class="secao">
+    <h2>✅ Passo 2 — Inserir os resultados reais, rodada a rodada</h2>
+    <div class="tabs" id="tabsContainer"></div>
+    <div id="conteudoRodada"></div>
+  </div>
+
+  <!-- PASSO 3: TABELA E RANKING -->
+  <div class="secao">
+    <h2>🏅 Passo 3 — Calcular pontos e ranking</h2>
+    <div class="btns-acao">
+      <button class="btn-calcular" onclick="calcular()">⚡ Calcular Pontos e Ranking</button>
+      <button class="btn-exportar" onclick="exportarResultado()">📊 Exportar resultado em Excel</button>
+      <button class="btn-limpar" onclick="limparTudo()">🗑️ Limpar tudo</button>
+    </div>
+    <div id="tabelaWrap" style="margin-top:18px"></div>
+    <div id="rankingWrap" style="margin-top:22px"></div>
+  </div>
+</div>
+<div class="toast" id="toast"></div>
+
+<script>
+// ===== DADOS DOS 16 AVOS (Round of 32) — numeração oficial FIFA (Jogos 73 a 88) =====
+// Precisa ficar IDÊNTICO ao array usado em apostas_mata_mata.html.
+// status 'aberto' = confronto já 100% definido pela fase de grupos; 'bloqueado' = depende de grupo(s) ainda em disputa e/ou da tabela dos melhores terceiros
+var ROUND32 = [
+  {n:73, status:'aberto',     a:'🇿🇦 África do Sul', b:'🇨🇦 Canadá',        desc:'2º Grupo A × 2º Grupo B'},
+  {n:74, status:'bloqueado',  desc:'🇩🇪 Alemanha (1º Grupo E) × Melhor 3º entre Grupos A/B/C/D/F'},
+  {n:75, status:'aberto',     a:'🇳🇱 Holanda', b:'🇲🇦 Marrocos',            desc:'1º Grupo F × 2º Grupo C'},
+  {n:76, status:'aberto',     a:'🇧🇷 Brasil', b:'🇯🇵 Japão',                desc:'1º Grupo C × 2º Grupo F'},
+  {n:77, status:'bloqueado',  desc:'🇫🇷 França (1º Grupo I) × Melhor 3º entre Grupos C/D/F/G/H'},
+  {n:78, status:'aberto',     a:'🇨🇮 Costa do Marfim', b:'🇳🇴 Noruega',     desc:'2º Grupo E × 2º Grupo I'},
+  {n:79, status:'bloqueado',  desc:'🇲🇽 México (1º Grupo A) × Melhor 3º entre Grupos C/E/F/H/I'},
+  {n:80, status:'bloqueado',  desc:'1º Grupo L × Melhor 3º entre Grupos E/H/I/J/K'},
+  {n:81, status:'bloqueado',  desc:'🇺🇸 Estados Unidos (1º Grupo D) × Melhor 3º entre Grupos B/E/F/I/J'},
+  {n:82, status:'bloqueado',  desc:'1º Grupo G × Melhor 3º entre Grupos A/E/H/I/J'},
+  {n:83, status:'bloqueado',  desc:'2º Grupo K × 2º Grupo L'},
+  {n:84, status:'bloqueado',  desc:'1º Grupo H × 2º Grupo J'},
+  {n:85, status:'bloqueado',  desc:'🇨🇭 Suíça (1º Grupo B) × Melhor 3º entre Grupos E/F/G/I/J'},
+  {n:86, status:'bloqueado',  desc:'1º Grupo J × 2º Grupo H'},
+  {n:87, status:'bloqueado',  desc:'1º Grupo K × Melhor 3º entre Grupos D/E/I/J/L'},
+  {n:88, status:'bloqueado',  desc:'🇦🇺 Austrália (2º Grupo D) × 2º Grupo G'}
+];
+
+var RODADAS = [
+  {id:'dezesseisavos', label:'16 avos', jogos:ROUND32, status:'aberta'},
+  {id:'oitavas', label:'Oitavas', jogos:[], status:'bloqueada', motivo:'Preencher aqui quando os 16 avos estiverem 100% definidos.'},
+  {id:'quartas', label:'Quartas', jogos:[], status:'bloqueada', motivo:'Preencher aqui quando as oitavas estiverem 100% definidas.'},
+  {id:'semi', label:'Semifinal', jogos:[], status:'bloqueada', motivo:'Preencher aqui quando as quartas estiverem 100% definidas.'},
+  {id:'final', label:'Final', jogos:[], status:'bloqueada', motivo:'Preencher aqui quando as semifinais estiverem 100% definidas.'}
+];
+
+var rodadaAtual = 'dezesseisavos';
+// resultados[n] = {a:'', b:'', pen:''}  pen = 'A'|'B'|'' (só relevante quando a===b, empate no tempo normal)
+var resultados = {};
+RODADAS.forEach(function(r){ r.jogos.forEach(function(j){ resultados[j.n] = {a:'',b:'',pen:''}; }); });
+
+// participantes = [{nome, arquivo, apostas:{n:{a,b}}}]
+var participantes = [];
+
+// ── TABS DE RODADA ──────────────────────────────────────────────
+function renderTabs(){
+  var c = document.getElementById('tabsContainer');
+  c.innerHTML = '';
+  RODADAS.forEach(function(r){
+    var b = document.createElement('button');
+    b.className = 'tab-btn' + (r.id===rodadaAtual?' ativa':'') + (r.status==='bloqueada'?' bloqueada':'');
+    b.textContent = (r.status==='bloqueada'?'🔒 ':'🟢 ') + r.label;
+    b.onclick = function(){ rodadaAtual = r.id; renderResultadosRodada(); };
+    c.appendChild(b);
+  });
+}
+
+function renderResultadosRodada(){
+  renderTabs();
+  var c = document.getElementById('conteudoRodada');
+  var r = RODADAS.filter(function(x){return x.id===rodadaAtual;})[0];
+
+  if(r.status === 'bloqueada' || !r.jogos.length){
+    c.innerHTML = '<div class="bloqueio-card"><div class="lic">🔒</div><h3>Rodada ainda sem jogos cadastrados</h3><p>'+(r.motivo||'')+'</p></div>';
+    return;
+  }
+
+  var html = '<div class="jogos-res-grid">';
+  r.jogos.forEach(function(j){
+    var res = resultados[j.n] || {a:'',b:'',pen:''};
+    if(j.status === 'aberto'){
+      var mostrarPen = (res.a !== '' && res.b !== '' && res.a === res.b);
+      html += '<div class="jogo-res-card" id="card_'+j.n+'">'
+        + '<div class="jogo-res-top">Jogo '+j.n+' &middot; '+j.desc+'</div>'
+        + '<div class="jogo-res-confronto">'
+        + '<span class="jrc-time dir">'+j.a+'</span>'
+        + '<div class="placar-real-inputs">'
+        + '<input type="number" min="0" max="20" inputmode="numeric" id="ra_'+j.n+'" value="'+res.a+'" onchange="atualizaResultado('+j.n+')">'
+        + '<span class="placar-real-x">×</span>'
+        + '<input type="number" min="0" max="20" inputmode="numeric" id="rb_'+j.n+'" value="'+res.b+'" onchange="atualizaResultado('+j.n+')">'
+        + '</div>'
+        + '<span class="jrc-time">'+j.b+'</span>'
+        + '</div>'
+        + '<div class="pen-wrap" id="pen_'+j.n+'" style="display:'+(mostrarPen?'flex':'none')+'">⚠️ Empate no tempo normal — quem avançou (pênaltis/prorrogação)? '
+        + '<select id="penSel_'+j.n+'" onchange="atualizaResultado('+j.n+')">'
+        + '<option value="">Selecione...</option>'
+        + '<option value="A"'+(res.pen==='A'?' selected':'')+'>'+j.a+'</option>'
+        + '<option value="B"'+(res.pen==='B'?' selected':'')+'>'+j.b+'</option>'
+        + '</select></div>'
+        + '</div>';
+    } else {
+      html += '<div class="jogo-res-card travado">'
+        + '<div class="jogo-res-top">Jogo '+j.n+'</div>'
+        + '<div class="jogo-res-confronto"><span class="jrc-time" style="flex:1">'+j.desc+'</span><span class="tag-lock-res">🔒 a definir</span></div>'
+        + '</div>';
+    }
+  });
+  html += '</div>';
+  c.innerHTML = html;
+}
+
+function atualizaResultado(n){
+  var a = document.getElementById('ra_'+n).value;
+  var b = document.getElementById('rb_'+n).value;
+  resultados[n].a = a;
+  resultados[n].b = b;
+  var penWrap = document.getElementById('pen_'+n);
+  var empatou = (a !== '' && b !== '' && a === b);
+  if(penWrap) penWrap.style.display = empatou ? 'flex' : 'none';
+  if(!empatou) resultados[n].pen = '';
+  var penSel = document.getElementById('penSel_'+n);
+  if(penSel && empatou) resultados[n].pen = penSel.value;
+  salvarLS();
+}
+
+// ── DRAG & DROP / IMPORTAÇÃO ─────────────────────────────────────
+function ev(e){e.preventDefault();document.getElementById('dropArea').classList.add('over');}
+document.getElementById('dropArea').addEventListener('dragleave',function(){this.classList.remove('over');});
+function drop(e){
+  e.preventDefault();document.getElementById('dropArea').classList.remove('over');
+  processarArquivos(e.dataTransfer.files);
+}
+function lerArquivos(e){ processarArquivos(e.target.files); e.target.value=''; }
+
+function todosJogos(){
+  var lista = [];
+  RODADAS.forEach(function(r){ r.jogos.forEach(function(j){ lista.push(j); }); });
+  return lista;
+}
+
+function processarArquivos(files){
+  Array.from(files).forEach(function(f){
+    if(!f.name.match(/\.xlsx$/i)){mostrarToast('Apenas .xlsx são aceitos: '+f.name,'err');return;}
+    var reader=new FileReader();
+    reader.onload=function(e){
+      try{
+        var wb=XLSX.read(e.target.result,{type:'arraybuffer'});
+        var ws=wb.Sheets['APOSTA_16AVOS'];
+        if(!ws)throw new Error('Aba APOSTA_16AVOS não encontrada');
+        var data=XLSX.utils.sheet_to_json(ws,{header:1,defval:''});
+
+        // Linha 0: PARTICIPANTE: nome (se ausente, usa o nome do arquivo)
+        var nome='';
+        if(data[0]&&String(data[0][0]||'').trim()==='PARTICIPANTE:') nome=String(data[0][1]||'').trim();
+        if(!nome) nome=f.name.replace(/\.xlsx$/i,'').replace(/^apostas_matamata_copa2026_/,'').replace(/_/g,' ').trim();
+
+        // Acha a linha de cabeçalho ('Nº Jogo') e lê as linhas seguintes
+        var headerIdx=-1;
+        for(var h=0;h<data.length;h++){ if(String(data[h][0]||'').trim()==='Nº Jogo'){headerIdx=h;break;} }
+        if(headerIdx<0) throw new Error('Cabeçalho "Nº Jogo" não encontrado');
+
+        var apostas={};
+        for(var i=headerIdx+1;i<data.length;i++){
+          var row=data[i];
+          if(!row||!row.length) continue;
+          var n=parseInt(row[0]);
+          if(!n) continue;
+          var status=String(row[5]||'').trim();
+          if(status!=='Liberado') continue;
+          var a=row[3], b=row[4];
+          if(a===''||b===''||a===undefined||b===undefined) continue;
+          apostas[n]={a:String(a).trim(), b:String(b).trim()};
+        }
+
+        var existe=participantes.findIndex(function(p){return p.nome===nome;});
+        if(existe>=0){participantes[existe]={nome:nome,arquivo:f.name,apostas:apostas};mostrarToast('Atualizado: '+nome,'ok');}
+        else{participantes.push({nome:nome,arquivo:f.name,apostas:apostas});mostrarToast('Importado: '+nome,'ok');}
+        renderParticipantes();salvarLS();
+      }catch(err){mostrarToast('Erro em '+f.name+': '+err.message,'err');}
+    };
+    reader.readAsArrayBuffer(f);
+  });
+}
+
+function renderParticipantes(){
+  var lista=document.getElementById('partLista');
+  lista.innerHTML='';
+  if(!participantes.length){lista.innerHTML='<span class="empty-msg">Nenhum arquivo importado ainda.</span>';return;}
+  participantes.forEach(function(p,i){
+    var tag=document.createElement('span');
+    tag.className='part-tag';
+    var nApostas=Object.keys(p.apostas).length;
+    tag.innerHTML='👤 '+p.nome+' <small style="color:#999">('+nApostas+' jogo'+(nApostas===1?'':'s')+')</small> <span class="rm-btn" title="Remover" onclick="removerPart('+i+')">✕</span>';
+    lista.appendChild(tag);
+  });
+}
+
+function removerPart(i){
+  participantes.splice(i,1);renderParticipantes();salvarLS();mostrarToast('Participante removido','ok');
+}
+
+// ── PONTUAÇÃO ────────────────────────────────────────────────────
+// Retorna {pts, golsA, golsB, vencedor} ou null se o resultado real ainda não está completo
+function resultadoCompleto(n){
+  var res = resultados[n];
+  if(!res || res.a==='' || res.b==='' || res.a===undefined || res.b===undefined) return null;
+  var ra=parseInt(res.a), rb=parseInt(res.b);
+  if(isNaN(ra)||isNaN(rb)) return null;
+  var vencedor;
+  if(ra>rb) vencedor='A';
+  else if(rb>ra) vencedor='B';
+  else { if(res.pen!=='A'&&res.pen!=='B') return null; vencedor=res.pen; }
+  return {a:ra,b:rb,vencedor:vencedor};
+}
+
+function pontuarJogo(bet, real){
+  if(!bet || bet.a===''||bet.b===''||bet.a===undefined||bet.b===undefined) return 0;
+  var ba=parseInt(bet.a), bb=parseInt(bet.b);
+  if(isNaN(ba)||isNaN(bb)) return 0;
+  var pts=0;
+  if(ba===real.a) pts+=1;
+  if(bb===real.b) pts+=1;
+  var apResultado = ba>bb?'A':(bb>ba?'B':'draw');
+  if(apResultado===real.vencedor) pts+=2;
+  return pts;
+}
+
+// ── CALCULAR ─────────────────────────────────────────────────────
+function calcular(){
+  if(!participantes.length){mostrarToast('Importe ao menos um participante!','err');return;}
+
+  var jogos = todosJogos().filter(function(j){return j.status==='aberto';});
+  var reaisPorJogo = {};
+  jogos.forEach(function(j){ reaisPorJogo[j.n] = resultadoCompleto(j.n); });
+  var jogosComResultado = jogos.filter(function(j){return reaisPorJogo[j.n]!==null;}).length;
+  var totalPossivel = jogosComResultado * 4;
+
+  // ── TABELA COMPARATIVA ──────────────────────────────────────────
+  var tWrap=document.getElementById('tabelaWrap');
+  var html='<h3 style="color:#FFD700;margin-bottom:10px">📊 Tabela Comparativa de Apostas</h3><div class="tabela-wrap"><table><thead><tr><th>Participante</th>';
+  jogos.forEach(function(j){html+='<th>Jogo '+j.n+'<br><small>'+stripFlags(j.a)+' × '+stripFlags(j.b)+'</small></th>';});
+  html+='<th style="color:#FFD700;font-size:1em">🏅 Pontos</th></tr></thead><tbody>';
+
+  var scores=[];
+  participantes.forEach(function(p){
+    var pts=0,celulas='';
+    jogos.forEach(function(j){
+      var bet=p.apostas[j.n];
+      var real=reaisPorJogo[j.n];
+      if(!bet||bet.a===''||bet.b===''){
+        celulas+='<td><span class="cel-vazio">—</span></td>';
+        return;
+      }
+      if(!real){
+        celulas+='<td><span class="cel-bet">'+bet.a+'×'+bet.b+'</span><span class="cel-aguardando">aguardando</span></td>';
+        return;
+      }
+      var p2=pontuarJogo(bet,real);
+      pts+=p2;
+      celulas+='<td><span class="cel-bet">'+bet.a+'×'+bet.b+'</span><span class="cel-pts p'+p2+'">+'+p2+' pt'+(p2===1?'':'s')+'</span></td>';
+    });
+    scores.push({nome:p.nome,pts:pts,celulas:celulas});
+  });
+
+  scores.sort(function(a,b){return b.pts-a.pts;});
+
+  scores.forEach(function(s){
+    html+='<tr><td>👤 '+s.nome+'</td>'+s.celulas+'<td class="pontos">'+s.pts+(totalPossivel?'/'+totalPossivel:'')+'</td></tr>';
+  });
+  html+='</tbody></table></div>';
+  if(!jogosComResultado) html+='<p class="empty-msg">Nenhum resultado real completo ainda — preencha o Passo 2 para calcular os pontos.</p>';
+  tWrap.innerHTML=html;
+
+  // ── RANKING ─────────────────────────────────────────────────────
+  var rWrap=document.getElementById('rankingWrap');
+  if(jogosComResultado){
+    var rHtml='<h3 style="color:#FFD700;margin-bottom:12px">🏆 Ranking — Mais Pontos</h3><div class="ranking-lista">';
+    var medalhas=['🥇','🥈','🥉'];
+    scores.forEach(function(s,i){
+      var cls=i===0?'rank-1':i===1?'rank-2':i===2?'rank-3':'';
+      var pct=totalPossivel?Math.round(s.pts/totalPossivel*100):0;
+      rHtml+='<div class="rank-item '+cls+'"><span class="rank-pos">'+(medalhas[i]||('#'+(i+1)))+'</span>'+
+        '<div><div class="rank-nome">'+s.nome+'</div><div class="rank-detail">'+pct+'% do total possível até agora</div></div>'+
+        '<span class="rank-pts">'+s.pts+' <small style="font-size:.65em;color:#aaa">/ '+totalPossivel+'</small></span></div>';
+    });
+    rHtml+='</div>';
+    rWrap.innerHTML=rHtml;
+  } else {
+    rWrap.innerHTML='';
+  }
+  mostrarToast('Cálculo concluído!','ok');
+  return scores;
+}
+
+function stripFlags(s){ return (s||'').replace(/^[^\sa-zA-ZÀ-ú]+\s*/, ''); }
+
+// ── EXPORTAR RESULTADO ───────────────────────────────────────────
+function exportarResultado(){
+  if(!participantes.length){mostrarToast('Nenhum dado para exportar','err');return;}
+  var jogos = todosJogos().filter(function(j){return j.status==='aberto';});
+  var reaisPorJogo = {};
+  jogos.forEach(function(j){ reaisPorJogo[j.n] = resultadoCompleto(j.n); });
+  var jogosComResultado = jogos.filter(function(j){return reaisPorJogo[j.n]!==null;}).length;
+  var totalPossivel = jogosComResultado * 4;
+
+  var scores=participantes.map(function(p){
+    var pts=0,detalhes=[];
+    jogos.forEach(function(j){
+      var bet=p.apostas[j.n]||{a:'',b:''};
+      var real=reaisPorJogo[j.n];
+      var p2=real?pontuarJogo(bet,real):0;
+      pts+=p2;
+      detalhes.push({n:j.n,desc:j.a+' x '+j.b,betA:bet.a,betB:bet.b,real:real,pts:real?p2:null});
+    });
+    return{nome:p.nome,pts:pts,detalhes:detalhes};
+  }).sort(function(a,b){return b.pts-a.pts;});
+
+  var wb=XLSX.utils.book_new();
+
+  var rankRows=[
+    ['BOLÃO COPA 2026 — MATA-MATA — RANKING'],
+    ['Gerado em:', new Date().toLocaleString('pt-BR')],
+    [],
+    ['POSIÇÃO','PARTICIPANTE','PONTOS','TOTAL POSSÍVEL ATÉ AGORA','% APROVEITAMENTO']
+  ];
+  scores.forEach(function(s,i){
+    rankRows.push([i+1, s.nome, s.pts, totalPossivel, totalPossivel?Math.round(s.pts/totalPossivel*100)+'%':'—']);
+  });
+  var wsRank=XLSX.utils.aoa_to_sheet(rankRows);
+  wsRank['!cols']=[{wch:10},{wch:28},{wch:10},{wch:22},{wch:16}];
+  wsRank['!merges']=[{s:{r:0,c:0},e:{r:0,c:4}}];
+  XLSX.utils.book_append_sheet(wb,wsRank,'RANKING');
+
+  var cabecalho=['PARTICIPANTE'];
+  jogos.forEach(function(j){cabecalho.push('Jogo '+j.n+' aposta','Jogo '+j.n+' pts');});
+  cabecalho.push('TOTAL');
+  var compRows=[['TABELA COMPARATIVA DETALHADA — MATA-MATA'],[''],cabecalho];
+  scores.forEach(function(s){
+    var row=[s.nome];
+    s.detalhes.forEach(function(d){
+      row.push((d.betA!==''&&d.betB!==''?d.betA+'x'+d.betB:'—'), d.pts===null?'aguardando':d.pts);
+    });
+    row.push(s.pts);
+    compRows.push(row);
+  });
+  var linhaReal=['>>> RESULTADO REAL <<<'];
+  jogos.forEach(function(j){
+    var real=reaisPorJogo[j.n];
+    linhaReal.push(real?(real.a+'x'+real.b):'—', real?('venceu: '+(real.vencedor==='A'?j.a:j.b)):'—');
+  });
+  compRows.push([]);compRows.push(linhaReal);
+  var wsComp=XLSX.utils.aoa_to_sheet(compRows);
+  wsComp['!merges']=[{s:{r:0,c:0},e:{r:0,c:cabecalho.length-1}}];
+  XLSX.utils.book_append_sheet(wb,wsComp,'COMPARATIVO');
+
+  scores.forEach(function(s){
+    var pRows=[
+      [s.nome+' — Apostas e Pontos — Mata-Mata'],
+      [],
+      ['JOGO','CONFRONTO','APOSTA','RESULTADO REAL','PONTOS'],
+    ];
+    s.detalhes.forEach(function(d){
+      pRows.push([
+        d.n, d.desc,
+        (d.betA!==''&&d.betB!==''?d.betA+'x'+d.betB:'—'),
+        d.real?(d.real.a+'x'+d.real.b):'aguardando',
+        d.pts===null?'—':d.pts
+      ]);
+    });
+    pRows.push([]);pRows.push(['TOTAL DE PONTOS:', s.pts, '', 'DE:', totalPossivel]);
+    var wsP=XLSX.utils.aoa_to_sheet(pRows);
+    wsP['!cols']=[{wch:8},{wch:42},{wch:14},{wch:16},{wch:10}];
+    wsP['!merges']=[{s:{r:0,c:0},e:{r:0,c:4}}];
+    var nomeFicha=s.nome.substring(0,25).replace(/[^a-zA-Z0-9 ]/g,'').trim()||'Part';
+    XLSX.utils.book_append_sheet(wb,wsP,nomeFicha);
+  });
+
+  XLSX.writeFile(wb,'resultado_matamata_copa2026_'+new Date().toLocaleDateString('pt-BR').replace(/\//g,'-')+'.xlsx');
+  mostrarToast('Excel exportado com sucesso!','ok');
+}
+
+// ── LOCALSTORAGE ─────────────────────────────────────────────────
+var LS_KEY='copa2026_gestor_matamata_v1';
+function salvarLS(){
+  try{localStorage.setItem(LS_KEY,JSON.stringify({participantes:participantes,resultados:resultados}));}catch(e){}
+}
+window.addEventListener('load',function(){
+  try{
+    var r=localStorage.getItem(LS_KEY);
+    if(r){
+      var d=JSON.parse(r);
+      if(d.participantes)participantes=d.participantes;
+      if(d.resultados){
+        Object.keys(d.resultados).forEach(function(n){ resultados[n]=d.resultados[n]; });
+      }
+      renderParticipantes();
+      if(participantes.length)mostrarToast(participantes.length+' participante(s) restaurado(s)','ok');
+    }
+  }catch(e){}
+  renderResultadosRodada();
+});
+
+function limparTudo(){
+  if(!confirm('Limpar todos os participantes e resultados do mata-mata?'))return;
+  participantes=[];
+  resultados={};
+  RODADAS.forEach(function(r){ r.jogos.forEach(function(j){ resultados[j.n] = {a:'',b:'',pen:''}; }); });
+  document.getElementById('tabelaWrap').innerHTML='';
+  document.getElementById('rankingWrap').innerHTML='';
+  renderParticipantes();renderResultadosRodada();localStorage.removeItem(LS_KEY);mostrarToast('Dados limpos!','ok');
+}
+
+function mostrarToast(msg,tipo){var t=document.getElementById('toast');t.textContent=msg;t.className='toast '+(tipo||'')+' show';setTimeout(function(){t.className='toast';},3200);}
+</script>
+</body>
+</html>

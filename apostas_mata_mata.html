@@ -282,7 +282,12 @@ function exportarParaOrganizador(){
   if(!nome){ toast('Preencha seu nome antes de exportar.', 'err'); return; }
   salvar();
 
-  var linhas = [['Nº Jogo','Rodada','Confronto','Placar Time A','Placar Time B','Status']];
+  var linhas = [
+    ['PARTICIPANTE:', nome, '', 'EXPORTADO EM:', new Date().toLocaleString('pt-BR')],
+    ['VERSAO:', 'matamata_v1', '', '', ''],
+    [],
+    ['Nº Jogo','Rodada','Confronto','Placar Time A','Placar Time B','Status']
+  ];
   RODADAS.forEach(function(r){
     if(r.status !== 'aberta') return;
     r.jogos.forEach(function(j){
