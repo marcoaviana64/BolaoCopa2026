@@ -1,0 +1,352 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Fase Final — Bolão Copa 2026</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'Segoe UI',Arial,sans-serif;background:linear-gradient(135deg,#003366,#001a33);min-height:100vh;padding:20px}
+.container{max-width:980px;margin:0 auto}
+.voltar{display:inline-block;margin-bottom:14px;color:#FFD700;text-decoration:none;font-size:.9em;font-weight:600}
+.voltar:hover{text-decoration:underline}
+header{text-align:center;color:#fff;margin-bottom:18px}
+header h1{font-size:1.9em;margin-bottom:4px}
+header p{opacity:.85;font-size:.95em}
+.save-bar{background:rgba(255,255,255,.1);border-radius:10px;padding:8px 14px;text-align:center;color:#FFD700;font-size:.82em;margin-bottom:16px}
+.nome-section{background:#fff;border-radius:14px;padding:18px 20px;margin-bottom:16px;box-shadow:0 4px 14px rgba(0,0,0,.2)}
+.nome-section label{display:block;font-weight:700;color:#003366;margin-bottom:6px}
+.nome-section input{width:100%;padding:10px 12px;border:2px solid #ddd;border-radius:8px;font-size:1em}
+.nome-section input:focus{outline:none;border-color:#003366}
+.instrucao{background:rgba(255,255,255,.95);border-radius:14px;padding:16px 18px;margin-bottom:14px;font-size:.92em;line-height:1.6;color:#222}
+.pont-box{background:rgba(255,255,255,.12);border:1px solid rgba(255,255,255,.25);border-radius:12px;padding:12px 18px;margin-bottom:16px;color:#fff;font-size:.86em;line-height:1.65}
+.pont-box strong{color:#FFD700}
+.status-box{background:rgba(255,255,255,.08);border-radius:10px;padding:10px 16px;margin-bottom:18px;color:rgba(255,255,255,.85);font-size:.82em;line-height:1.6;text-align:center}
+.status-box b{color:#FFD700}
+.faixa-escolhas{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:18px}
+.slot{background:rgba(255,255,255,.95);border-radius:12px;padding:12px 8px;text-align:center;box-shadow:0 3px 10px rgba(0,0,0,.18);border:2px solid transparent;transition:.2s}
+.slot.preenchido{border-color:#FFD700;background:#fffdf2}
+.slot-label{display:block;font-size:.72em;font-weight:700;color:#003366;margin-bottom:6px}
+.slot-time{display:block;font-size:.88em;font-weight:600;color:#333;min-height:1.3em}
+.progresso-txt{color:#fff;text-align:center;margin-bottom:6px;font-weight:600;font-size:.92em}
+.progresso-bar-wrap{background:rgba(255,255,255,.2);border-radius:20px;height:14px;overflow:hidden;margin-bottom:20px}
+.progresso-bar{height:100%;background:linear-gradient(90deg,#FFD700,#ffaa00);border-radius:20px;width:0%;transition:width .3s}
+.grupos-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:14px;margin-bottom:24px}
+.grupo-card{background:#fff;border-radius:14px;overflow:hidden;box-shadow:0 4px 14px rgba(0,0,0,.18)}
+.grupo-header{padding:10px 14px;color:#fff;font-weight:700;display:flex;justify-content:space-between;align-items:center;font-size:.9em}
+.grupo-header .cnt{font-weight:600;font-size:.85em;opacity:.95}
+.times-lista{padding:8px}
+.time-item{display:flex;align-items:center;gap:8px;padding:9px 10px;border-radius:8px;cursor:pointer;border:2px solid transparent;transition:.15s;margin-bottom:4px}
+.time-item:hover{background:#f5f7fa}
+.time-item.eliminado{cursor:not-allowed;opacity:.5;background:#f7f7f7}
+.time-item.eliminado:hover{background:#f7f7f7}
+.time-item .nome{flex:1;font-size:.92em;font-weight:500;color:#222}
+.badge-pos{font-size:.68em;font-weight:700;padding:3px 8px;border-radius:9px;white-space:nowrap}
+.badge-1{background:#FFD700;color:#5a4500}
+.badge-2{background:#C0C0C0;color:#333}
+.badge-3{background:#cd7f32;color:#fff}
+.tag-elim{background:#eee;color:#999}
+.btns-finais{display:flex;gap:12px;justify-content:center;flex-wrap:wrap;margin-bottom:30px}
+.btn-ver,.btn-enviar,.btn-print{padding:13px 26px;border-radius:10px;border:none;font-weight:700;font-size:.95em;cursor:pointer;transition:.2s}
+.btn-ver{background:rgba(255,255,255,.9);color:#003366}
+.btn-ver:hover{background:#fff}
+.btn-enviar{background:#FFD700;color:#5a4500}
+.btn-enviar:hover{background:#ffc700}
+.btn-print{background:rgba(255,255,255,.15);color:#fff;border:1px solid rgba(255,255,255,.4)}
+.btn-print:hover{background:rgba(255,255,255,.25)}
+.rm{display:none;position:fixed;inset:0;background:rgba(0,0,0,.6);z-index:100;align-items:center;justify-content:center;padding:20px}
+.rm.ativo{display:flex}
+.rb{background:#fff;border-radius:16px;padding:26px;max-width:480px;width:100%;max-height:85vh;overflow-y:auto}
+.rb h2{color:#003366;margin-bottom:4px}
+.rb .rnome{color:#666;font-size:.88em;margin-bottom:16px}
+.rf-item{display:flex;justify-content:space-between;align-items:center;padding:11px 4px;border-bottom:1px dashed #e2e2e2;font-size:.95em}
+.rf-item:last-child{border-bottom:none}
+.rf-label{font-weight:700;color:#003366}
+.rf-time{color:#111;font-weight:600;text-align:right}
+.rf-time em{color:#999;font-weight:400;font-style:italic}
+.rb-fechar{margin-top:18px;width:100%;padding:11px;background:#003366;color:#fff;border:none;border-radius:8px;font-weight:700;cursor:pointer}
+.toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%) translateY(20px);background:#222;color:#fff;padding:12px 22px;border-radius:10px;font-size:.9em;opacity:0;transition:.3s;z-index:200;max-width:90%;text-align:center}
+.toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+.toast.err{background:#b3261e}
+.toast.ok{background:#1b5e20}
+@media(max-width:640px){
+.faixa-escolhas{grid-template-columns:repeat(2,1fr)}
+.grupos-grid{grid-template-columns:1fr}
+header h1{font-size:1.5em}
+}
+@media print{
+.voltar,.save-bar,.btns-finais,.toast{display:none}
+body{background:#fff}
+.instrucao,.pont-box,.status-box{background:#f5f5f5;color:#000}
+}
+</style>
+</head>
+<body>
+<div class="container">
+<a class="voltar" href="index.html">← Voltar ao menu</a>
+<header>
+<h1>🏆 Bolão Copa 2026 — Fase Final</h1>
+<p>Quem chega ao topo?</p>
+</header>
+
+<div class="save-bar">💾 Suas escolhas são salvas automaticamente neste navegador</div>
+
+<div class="nome-section">
+<label for="nomeP">Seu nome:</label>
+<input type="text" id="nomeP" placeholder="Digite seu nome completo" autocomplete="off">
+</div>
+
+<div class="instrucao">
+<strong>Como apostar:</strong> clique em até <strong>4 times</strong> (em qualquer grupo) que você acredita que vão chegar à fase final. A ordem dos cliques define o palpite: <strong>1º clique = 🥇 Campeão</strong>, <strong>2º clique = 🥈 Vice-campeão</strong>, <strong>3º e 4º cliques = 🥉 Semifinalistas</strong> (esses dois não têm ordem entre si). Clique de novo em um time já escolhido para desmarcá-lo e liberar a vaga.<br><br>
+Times marcados com <strong>❌</strong> já foram eliminados na fase de grupos e não podem ser escolhidos.
+</div>
+
+<div class="pont-box">
+🎯 <strong>Como pontua (aposta extra, separada da fase de grupos):</strong> +1 ponto para cada time que você escolheu e que realmente chegar à semifinal de verdade — não importa em qual das 4 posições você colocou. Total possível: 4 pontos. Em caso de empate, vence quem acertar <strong>exatamente</strong> quem é o Campeão e quem é o Vice. 🎁 Premiação desta aposta extra: a combinar entre os participantes e o organizador.
+</div>
+
+<div class="status-box" id="statusBox">📌 Carregando status dos grupos…</div>
+
+<div class="faixa-escolhas" id="faixaEscolhas">
+<div class="slot" id="slot_0"><span class="slot-label">🥇 Campeão</span><span class="slot-time">— clique em um time —</span></div>
+<div class="slot" id="slot_1"><span class="slot-label">🥈 Vice-campeão</span><span class="slot-time">— clique em um time —</span></div>
+<div class="slot" id="slot_2"><span class="slot-label">🥉 Semifinalista</span><span class="slot-time">— clique em um time —</span></div>
+<div class="slot" id="slot_3"><span class="slot-label">🥉 Semifinalista</span><span class="slot-time">— clique em um time —</span></div>
+</div>
+
+<div class="progresso-txt" id="progTxt">0 de 4 times escolhidos</div>
+<div class="progresso-bar-wrap"><div class="progresso-bar" id="progBar"></div></div>
+
+<div class="grupos-grid" id="gruposGrid"></div>
+
+<div class="btns-finais">
+<button class="btn-ver" onclick="mostrarResumo()">👁️ Ver resumo</button>
+<button class="btn-enviar" onclick="exportarParaOrganizador()">📤 Exportar e enviar ao organizador</button>
+<button class="btn-print" onclick="window.print()">🖨️ Imprimir</button>
+</div>
+</div>
+
+<div class="rm" id="rModal">
+<div class="rb">
+<h2>🏆 Resumo da Aposta — Fase Final</h2>
+<div class="rnome" id="rNome">Participante:</div>
+<div id="rConteudo"></div>
+<button class="rb-fechar" onclick="document.getElementById('rModal').classList.remove('ativo')">Fechar</button>
+</div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+var GRUPOS=[
+  {l:'A',c:'#c1121f',times:['🇲🇽 México','🇰🇷 Coreia do Sul','🇨🇿 Tchéquia','🇿🇦 África do Sul']},
+  {l:'B',c:'#2a9d8f',times:['🇨🇦 Canadá','🇧🇦 Bósnia e Herzegovina','🇶🇦 Catar','🇨🇭 Suíça']},
+  {l:'C',c:'#e07a2f',times:['🇧🇷 Brasil','🇲🇦 Marrocos','🏴󠁧󠁢󠁳󠁣󠁴󠁿 Escócia','🇭🇹 Haiti']},
+  {l:'D',c:'#457b9d',times:['🇺🇸 Estados Unidos','🇵🇾 Paraguai','🇦🇺 Austrália','🇹🇷 Turquia']},
+  {l:'E',c:'#6d4c41',times:['🇩🇪 Alemanha','🇨🇼 Curaçao','🇨🇮 Costa do Marfim','🇪🇨 Equador']},
+  {l:'F',c:'#8338ec',times:['🇳🇱 Holanda','🇯🇵 Japão','🇸🇪 Suécia','🇹🇳 Tunísia']},
+  {l:'G',c:'#e76f51',times:['🇧🇪 Bélgica','🇪🇬 Egito','🇮🇷 Irã','🇳🇿 Nova Zelândia']},
+  {l:'H',c:'#d62828',times:['🇪🇸 Espanha','🇨🇻 Cabo Verde','🇸🇦 Arábia Saudita','🇺🇾 Uruguai']},
+  {l:'I',c:'#2b9348',times:['🇫🇷 França','🇸🇳 Senegal','🇮🇶 Iraque','🇳🇴 Noruega']},
+  {l:'J',c:'#0077b6',times:['🇦🇷 Argentina','🇩🇿 Argélia','🇦🇹 Áustria','🇯🇴 Jordânia']},
+  {l:'K',c:'#6a0572',times:['🇵🇹 Portugal','🇨🇩 RD Congo','🇺🇿 Uzbequistão','🇨🇴 Colômbia']},
+  {l:'L',c:'#b5451b',times:['🏴󠁧󠁢󠁥󠁮󠁧󠁿 Inglaterra','🇭🇷 Croácia','🇬🇭 Gana','🇵🇦 Panamá']}
+];
+var GRUPOS_DECIDIDOS=['A','B','C','D','E','F','I'];
+var ELIMINADOS=['Tchéquia','Catar','Haiti','Turquia','Curaçao','Tunísia','Iraque'];
+var SAVE_KEY='copa2026_fasefinal_v1';
+var LABELS=['🥇 Campeão','🥈 Vice-campeão','🥉 Semifinalista','🥉 Semifinalista'];
+var BADGE_TXT=['🥇 Campeão','🥈 Vice','🥉 Semi','🥉 Semi'];
+var BADGE_CLASS=['badge-1','badge-2','badge-3','badge-3'];
+
+var escolhas=[];
+
+function limparEmoji(s){
+  return s.replace(/[\u{1F000}-\u{FFFFF}\u{2600}-\u{27BF}\u{FE0F}]/gu,'').trim();
+}
+function estaEliminado(t){return ELIMINADOS.indexOf(limparEmoji(t))!==-1;}
+function indexOfEscolha(gi,ti){
+  for(var i=0;i<escolhas.length;i++){if(escolhas[i].gi===gi&&escolhas[i].ti===ti)return i;}
+  return -1;
+}
+
+function montarGrid(){
+  var grid=document.getElementById('gruposGrid');
+  var html='';
+  GRUPOS.forEach(function(g,gi){
+    html+='<div class="grupo-card"><div class="grupo-header" style="background:'+g.c+'"><span>Grupo '+g.l+'</span><span class="cnt" id="cnt_'+gi+'">0 selecionado</span></div><div class="times-lista">';
+    g.times.forEach(function(t,ti){
+      var elim=estaEliminado(t);
+      if(elim){
+        html+='<div class="time-item eliminado" id="item_'+gi+'_'+ti+'"><span class="nome">'+t+'</span><span class="badge-pos tag-elim" style="display:inline-block">❌ Eliminado</span></div>';
+      }else{
+        html+='<div class="time-item" id="item_'+gi+'_'+ti+'" onclick="toggleTime('+gi+','+ti+')"><span class="nome">'+t+'</span><span class="badge-pos" id="badge_'+gi+'_'+ti+'" style="display:none"></span></div>';
+      }
+    });
+    html+='</div></div>';
+  });
+  grid.innerHTML=html;
+}
+
+function toggleTime(gi,ti){
+  var nome=GRUPOS[gi].times[ti];
+  if(estaEliminado(nome))return;
+  var idx=indexOfEscolha(gi,ti);
+  if(idx!==-1){
+    escolhas.splice(idx,1);
+  }else{
+    if(escolhas.length>=4){
+      mostrarToast('⚠️ Você já escolheu 4 times. Clique em um deles para desmarcar antes de escolher outro.','err');
+      return;
+    }
+    escolhas.push({gi:gi,ti:ti});
+  }
+  renderTudo();
+  atualizarProgresso();
+  salvarAuto();
+}
+
+function renderGrupo(gi){
+  var g=GRUPOS[gi];
+  var count=0;
+  g.times.forEach(function(t,ti){
+    if(estaEliminado(t))return;
+    var item=document.getElementById('item_'+gi+'_'+ti);
+    var badge=document.getElementById('badge_'+gi+'_'+ti);
+    var posIdx=indexOfEscolha(gi,ti);
+    var isSel=posIdx!==-1;
+    if(isSel)count++;
+    if(isSel){
+      item.style.borderColor=g.c;
+      item.style.background='#f0fff4';
+      badge.style.display='inline-block';
+      badge.textContent=BADGE_TXT[posIdx];
+      badge.className='badge-pos '+BADGE_CLASS[posIdx];
+    }else{
+      item.style.borderColor='transparent';
+      item.style.background='';
+      badge.style.display='none';
+    }
+  });
+  document.getElementById('cnt_'+gi).textContent=count+(count===1?' selecionado':' selecionados');
+}
+
+function renderTudo(){
+  GRUPOS.forEach(function(g,gi){renderGrupo(gi);});
+  atualizarFaixa();
+}
+
+function atualizarFaixa(){
+  for(var i=0;i<4;i++){
+    var el=document.getElementById('slot_'+i);
+    var tEl=el.querySelector('.slot-time');
+    if(escolhas[i]){
+      tEl.textContent=GRUPOS[escolhas[i].gi].times[escolhas[i].ti];
+      el.classList.add('preenchido');
+    }else{
+      tEl.textContent='— clique em um time —';
+      el.classList.remove('preenchido');
+    }
+  }
+}
+
+function atualizarProgresso(){
+  document.getElementById('progTxt').textContent=escolhas.length+' de 4 times escolhidos';
+  document.getElementById('progBar').style.width=(escolhas.length/4*100)+'%';
+}
+
+function atualizarStatusBox(){
+  var faltam=GRUPOS.filter(function(g){return GRUPOS_DECIDIDOS.indexOf(g.l)===-1;}).map(function(g){return g.l;});
+  document.getElementById('statusBox').innerHTML='📌 <b>Status hoje:</b> grupos '+GRUPOS_DECIDIDOS.join(', ')+' já estão definidos — os times eliminados aparecem com ❌. Grupos <b>'+faltam.join(', ')+'</b> ainda têm jogos em aberto; todos os times desses grupos continuam disponíveis para escolha.';
+}
+
+function mostrarToast(msg,tipo){
+  var t=document.getElementById('toast');
+  t.textContent=msg;
+  t.className='toast show'+(tipo?' '+tipo:'');
+  clearTimeout(t._tm);
+  t._tm=setTimeout(function(){t.className='toast';},3200);
+}
+
+function coletarDados(){
+  return{nome:document.getElementById('nomeP').value,escolhas:escolhas.slice()};
+}
+function aplicarDados(d){
+  if(d.nome)document.getElementById('nomeP').value=d.nome;
+  if(d.escolhas){
+    escolhas=d.escolhas.filter(function(e){
+      return GRUPOS[e.gi]&&GRUPOS[e.gi].times[e.ti]&&!estaEliminado(GRUPOS[e.gi].times[e.ti]);
+    }).slice(0,4);
+  }
+}
+
+var salvarTimer=null;
+function salvarAuto(){
+  clearTimeout(salvarTimer);
+  salvarTimer=setTimeout(function(){
+    try{localStorage.setItem(SAVE_KEY,JSON.stringify(coletarDados()));}catch(e){}
+  },700);
+}
+function carregarSalvo(){
+  try{
+    var raw=localStorage.getItem(SAVE_KEY);
+    if(raw){aplicarDados(JSON.parse(raw));}
+  }catch(e){}
+}
+
+function mostrarResumo(){
+  var nome=document.getElementById('nomeP').value.trim()||'Sem nome';
+  document.getElementById('rNome').textContent='Participante: '+nome;
+  var html='';
+  for(var i=0;i<4;i++){
+    var nomeTime=escolhas[i]?GRUPOS[escolhas[i].gi].times[escolhas[i].ti]:null;
+    html+='<div class="rf-item"><span class="rf-label">'+LABELS[i]+'</span><span class="rf-time">'+(nomeTime||'<em>— não escolhido —</em>')+'</span></div>';
+  }
+  document.getElementById('rConteudo').innerHTML=html;
+  document.getElementById('rModal').classList.add('ativo');
+}
+
+function exportarParaOrganizador(){
+  var nome=document.getElementById('nomeP').value.trim();
+  if(!nome){
+    mostrarToast('⚠️ Preencha seu nome antes de exportar!','err');
+    document.getElementById('nomeP').focus();
+    return;
+  }
+  if(escolhas.length<4){
+    if(!confirm('Você só escolheu '+escolhas.length+' de 4 times. Deseja exportar assim mesmo?'))return;
+  }
+  if(typeof XLSX==='undefined'){
+    mostrarToast('⏳ Aguarde o carregamento da biblioteca e tente novamente.','err');
+    return;
+  }
+  var rows=[
+    ['PARTICIPANTE:',nome,'','EXPORTADO EM:',new Date().toLocaleString('pt-BR')],
+    ['VERSAO:','fasefinal_v1'],
+    [],
+    ['POSIÇÃO APOSTADA','TIME']
+  ];
+  for(var i=0;i<4;i++){
+    var nomeTime=escolhas[i]?limparEmoji(GRUPOS[escolhas[i].gi].times[escolhas[i].ti]):'';
+    rows.push([LABELS[i].replace(/[\u{1F000}-\u{FFFFF}\u{2600}-\u{27BF}\u{FE0F}]/gu,'').trim(),nomeTime]);
+  }
+  var wb=XLSX.utils.book_new();
+  var ws=XLSX.utils.aoa_to_sheet(rows);
+  ws['!cols']=[{wch:20},{wch:26},{wch:4},{wch:16},{wch:22}];
+  XLSX.utils.book_append_sheet(wb,ws,'APOSTA_FASE_FINAL');
+  var nomeArq='apostas_fasefinal_copa2026_'+nome.replace(/[^a-zA-Z0-9]/g,'_')+'.xlsx';
+  XLSX.writeFile(wb,nomeArq);
+  mostrarToast('✅ Arquivo gerado: '+nomeArq,'ok');
+  setTimeout(function(){alert('Arquivo "'+nomeArq+'" gerado!\n\nEnvie ao organizador por WhatsApp, e-mail ou como preferir.');},400);
+}
+
+montarGrid();
+carregarSalvo();
+renderTudo();
+atualizarProgresso();
+atualizarStatusBox();
+document.getElementById('nomeP').addEventListener('input',salvarAuto);
+</script>
+</body>
+</html>

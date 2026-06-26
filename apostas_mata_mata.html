@@ -1,0 +1,321 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Bolão Copa 2026 — Mata-Mata</title>
+<script src="https://cdn.sheetjs.com/xlsx-0.20.3/package/dist/xlsx.full.min.js"></script>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'Segoe UI',Arial,sans-serif;background:linear-gradient(135deg,#003366 0%,#006633 100%);min-height:100vh;padding:20px}
+.container{max-width:760px;margin:0 auto}
+header{text-align:center;padding:20px 20px 12px}
+header h1{color:#FFD700;font-size:2.1em;text-shadow:2px 2px 4px rgba(0,0,0,.5);margin-bottom:5px}
+header p{color:#fff;font-size:.95em;opacity:.85}
+.save-bar{background:rgba(0,0,0,.35);border-radius:10px;padding:10px 16px;margin:12px 0 18px;display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+.save-bar .status{color:#aee6a1;font-size:.82em;flex:1;min-width:160px}
+.nome-section{background:rgba(255,255,255,.95);border-radius:12px;padding:15px 20px;margin-bottom:16px;box-shadow:0 4px 15px rgba(0,0,0,.2);display:flex;align-items:center;gap:12px}
+.nome-section label{font-weight:700;color:#003366;font-size:1em;white-space:nowrap}
+.nome-section input{flex:1;padding:9px 13px;border:2px solid #003366;border-radius:8px;font-size:1em;color:#333}
+.instrucao{background:rgba(255,215,0,.15);border:1px solid rgba(255,215,0,.4);border-radius:10px;padding:13px 16px;margin-bottom:16px;color:#fff;font-size:.86em;line-height:1.65}
+.instrucao strong{color:#FFD700}
+.instrucao .ex{display:block;margin-top:7px;padding:8px 11px;background:rgba(0,0,0,.25);border-radius:7px;font-size:.92em}
+.cota{background:rgba(255,255,255,.95);border-radius:10px;padding:10px 16px;margin-bottom:18px;color:#003366;font-size:.86em;font-weight:700;text-align:center;box-shadow:0 3px 10px rgba(0,0,0,.15)}
+.tabs{display:flex;gap:7px;margin-bottom:16px;flex-wrap:wrap}
+.tab-btn{flex:1;min-width:90px;padding:10px 8px;border:none;border-radius:9px;background:rgba(255,255,255,.18);color:#fff;font-weight:700;font-size:.82em;cursor:pointer;text-align:center;border:2px solid transparent;transition:.15s}
+.tab-btn.ativa{background:#FFD700;color:#003366;border-color:#FFD700}
+.tab-btn.bloqueada{opacity:.55}
+.tab-btn .lock{font-size:.85em}
+.bloqueio-card{background:rgba(255,255,255,.95);border-radius:14px;padding:30px 24px;text-align:center;color:#555;box-shadow:0 4px 16px rgba(0,0,0,.15)}
+.bloqueio-card .lic{font-size:2.4em;margin-bottom:10px}
+.bloqueio-card h3{color:#003366;margin-bottom:8px;font-size:1.1em}
+.progresso-txt{text-align:center;color:#fff;font-size:.84em;margin-bottom:7px;opacity:.9}
+.progresso-bar-wrap{background:rgba(0,0,0,.3);border-radius:8px;height:9px;margin:0 0 18px}
+.progresso-bar{height:9px;border-radius:8px;background:linear-gradient(90deg,#FFD700,#FFA500);transition:width .4s}
+.jogos-grid{display:flex;flex-direction:column;gap:11px;margin-bottom:22px}
+.jogo-card{background:rgba(255,255,255,.97);border-radius:13px;box-shadow:0 4px 14px rgba(0,0,0,.14);padding:13px 16px}
+.jogo-card.bloqueado{background:rgba(255,255,255,.55);box-shadow:none;border:2px dashed rgba(255,255,255,.5)}
+.jogo-num{font-size:.68em;font-weight:700;color:#888;text-transform:uppercase;letter-spacing:.04em;margin-bottom:7px}
+.jogo-card.bloqueado .jogo-num{color:rgba(255,255,255,.65)}
+.confronto{display:flex;align-items:center;gap:10px}
+.time{flex:1;font-weight:700;color:#111;font-size:.95em}
+.jogo-card.bloqueado .time-bloq{flex:1;color:rgba(255,255,255,.85);font-size:.86em;line-height:1.5}
+.placar-inputs{display:flex;align-items:center;gap:6px;flex-shrink:0}
+.placar-inputs input{width:48px;height:42px;text-align:center;font-size:1.15em;font-weight:700;border:2px solid #003366;border-radius:8px;color:#003366}
+.placar-inputs input:focus{outline:none;border-color:#FFA500}
+.placar-x{font-weight:700;color:#888}
+.tag-lock{display:inline-flex;align-items:center;gap:4px;color:rgba(255,255,255,.8);font-size:.78em;font-weight:700;flex-shrink:0}
+.btns-finais{max-width:440px;margin:0 auto 28px}
+.btn-ver{display:block;width:100%;padding:15px;background:linear-gradient(135deg,#FFD700,#FFA500);color:#003366;border:none;border-radius:12px;font-size:1.05em;font-weight:700;cursor:pointer;box-shadow:0 4px 15px rgba(255,165,0,.4);transition:transform .2s;margin-bottom:9px}
+.btn-ver:hover{transform:translateY(-2px)}
+.btn-enviar{display:block;width:100%;padding:16px;background:linear-gradient(135deg,#FFD700 0%,#FFA500 100%);color:#003366;border:none;border-radius:12px;font-size:1.08em;font-weight:900;cursor:pointer;box-shadow:0 6px 20px rgba(255,165,0,.55);transition:transform .2s,box-shadow .2s;margin-bottom:9px;letter-spacing:.02em;text-transform:uppercase}
+.btn-enviar:hover{transform:translateY(-2px);box-shadow:0 8px 26px rgba(255,165,0,.7)}
+.btn-print{display:block;width:100%;padding:11px;background:rgba(255,255,255,.18);color:#fff;border:2px solid rgba(255,255,255,.4);border-radius:12px;font-size:.93em;font-weight:700;cursor:pointer}
+.btn-print:hover{background:rgba(255,255,255,.26)}
+.rm{display:none;position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,.75);z-index:1000;justify-content:center;align-items:flex-start;padding:20px;overflow-y:auto}
+.rm.ativo{display:flex}
+.rb{background:#fff;border-radius:16px;padding:26px;max-width:560px;width:100%;margin:auto;box-shadow:0 10px 40px rgba(0,0,0,.3)}
+.rb h2{color:#003366;text-align:center;margin-bottom:4px;font-size:1.3em}
+.rb .sub{text-align:center;color:#666;margin-bottom:16px;font-style:italic;font-size:.88em}
+.r-jogo{display:flex;justify-content:space-between;align-items:center;padding:8px 4px;border-bottom:1px dashed #eee;font-size:.9em}
+.r-jogo:last-child{border-bottom:none}
+.r-jogo .rj-times{color:#333;font-weight:600}
+.r-jogo .rj-placar{color:#003366;font-weight:800}
+.bcf{display:block;margin:18px auto 0;padding:9px 28px;background:#003366;color:#fff;border:none;border-radius:8px;font-size:.95em;cursor:pointer;font-weight:700}
+.toast{position:fixed;bottom:26px;left:50%;transform:translateX(-50%) translateY(80px);background:#333;color:#fff;padding:9px 20px;border-radius:30px;font-size:.87em;font-weight:600;opacity:0;transition:all .3s;z-index:2000;pointer-events:none}
+.toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+.toast.ok{background:#2e7d32}
+.toast.err{background:#c62828}
+@media print{body{background:#fff;padding:0}.save-bar,.btns-finais,.tabs{display:none}.jogo-card{box-shadow:none;border:1px solid #ddd;break-inside:avoid}}
+</style>
+</head>
+<body>
+<div class="container">
+  <div style="margin-bottom:10px">
+    <a href="index.html" style="display:inline-flex;align-items:center;gap:6px;color:rgba(255,255,255,.75);text-decoration:none;font-size:.83em;font-weight:600;background:rgba(0,0,0,.25);padding:6px 13px;border-radius:20px;border:1px solid rgba(255,255,255,.2);transition:opacity .2s" onmouseover="this.style.opacity='.7'" onmouseout="this.style.opacity='1'">‹ Menu principal</a>
+  </div>
+  <header>
+    <h1>⚔️ Bolão Copa 2026 — Mata-Mata</h1>
+    <p>Copa do Mundo 2026 &mdash; Aposte o placar de cada fase, rodada a rodada</p>
+  </header>
+
+  <div class="save-bar">
+    <span class="status" id="saveStatus">💾 Apostas salvas automaticamente no navegador</span>
+  </div>
+
+  <div class="nome-section">
+    <label for="nomeP">👤 Participante:</label>
+    <input type="text" id="nomeP" placeholder="Digite seu nome completo (obrigatório para envio)..." autocomplete="off">
+  </div>
+
+  <div class="cota">💰 Cota desta fase (mata-mata): R$ 50 por participante &mdash; cobrada separadamente da cota da fase de grupos</div>
+
+  <div class="instrucao">
+    <strong>Como pontua cada jogo:</strong><br>
+    🥅 <strong>+2 pontos</strong> se você acertar quem avança (o vencedor real do confronto, mesmo que seja decidido na prorrogação ou nos pênaltis).<br>
+    🎯 <strong>+1 ponto</strong> para cada seleção cujo número de gols no tempo normal você acertar (até +2, um ponto por seleção, de forma independente).<br>
+    Total possível: <strong>até 4 pontos por jogo</strong>.
+    <div class="ex">Exemplo: você aposta <strong>2x1</strong> e o jogo termina <strong>2x0</strong> no tempo normal → acerta o vencedor (+2) e acerta os gols de quem fez 2 (+1) = <strong>3 pontos</strong> (errou os gols do outro time, que você marcou 1 e fez 0).</div>
+    <div class="ex">Se você apostar um <strong>placar de empate</strong> (ex: 1x1), não concorre aos 2 pontos de vencedor — mas ainda pode ganhar os pontos de gols se acertar o placar do tempo normal.</div>
+    Os confrontos marcados como <strong>🔒 a definir</strong> ainda dependem de grupos que não terminaram (G, H, J, K, L) e/ou da tabela oficial dos 8 melhores terceiros colocados. Eles serão liberados aqui assim que a fase de grupos terminar.
+  </div>
+
+  <div class="tabs" id="tabsContainer"></div>
+
+  <div id="conteudoRodada"></div>
+
+  <div class="btns-finais" id="btnsFinais">
+    <button class="btn-ver" onclick="mostrarResumo()">✅ Ver Resumo das Apostas</button>
+    <button class="btn-enviar" onclick="exportarParaOrganizador()">📤 Exportar e enviar ao organizador (.xlsx)</button>
+    <button class="btn-print" onclick="window.print()">🖨️ Imprimir / Salvar PDF</button>
+  </div>
+</div>
+
+<div class="rm" id="rModal">
+  <div class="rb">
+    <h2>⚔️ Placares Apostados — Mata-Mata 2026</h2>
+    <p class="sub" id="rNome"></p>
+    <div id="rConteudo"></div>
+    <button class="bcf" onclick="document.getElementById('rModal').classList.remove('ativo')">✕ Fechar</button>
+  </div>
+</div>
+<div class="toast" id="toast"></div>
+
+<script>
+// ===== DADOS DOS 16 AVOS (Round of 32) — numeração oficial FIFA (Jogos 73 a 88) =====
+// status 'aberto' = confronto já 100% definido pela fase de grupos; 'bloqueado' = depende de grupo(s) ainda em disputa e/ou da tabela dos melhores terceiros
+var ROUND32 = [
+  {n:73, status:'aberto',     a:'🇿🇦 África do Sul', b:'🇨🇦 Canadá',        desc:'2º Grupo A × 2º Grupo B'},
+  {n:74, status:'bloqueado',  desc:'🇩🇪 Alemanha (1º Grupo E) × Melhor 3º entre Grupos A/B/C/D/F'},
+  {n:75, status:'aberto',     a:'🇳🇱 Holanda', b:'🇲🇦 Marrocos',            desc:'1º Grupo F × 2º Grupo C'},
+  {n:76, status:'aberto',     a:'🇧🇷 Brasil', b:'🇯🇵 Japão',                desc:'1º Grupo C × 2º Grupo F'},
+  {n:77, status:'bloqueado',  desc:'🇫🇷 França (1º Grupo I) × Melhor 3º entre Grupos C/D/F/G/H'},
+  {n:78, status:'aberto',     a:'🇨🇮 Costa do Marfim', b:'🇳🇴 Noruega',     desc:'2º Grupo E × 2º Grupo I'},
+  {n:79, status:'bloqueado',  desc:'🇲🇽 México (1º Grupo A) × Melhor 3º entre Grupos C/E/F/H/I'},
+  {n:80, status:'bloqueado',  desc:'1º Grupo L × Melhor 3º entre Grupos E/H/I/J/K'},
+  {n:81, status:'bloqueado',  desc:'🇺🇸 Estados Unidos (1º Grupo D) × Melhor 3º entre Grupos B/E/F/I/J'},
+  {n:82, status:'bloqueado',  desc:'1º Grupo G × Melhor 3º entre Grupos A/E/H/I/J'},
+  {n:83, status:'bloqueado',  desc:'2º Grupo K × 2º Grupo L'},
+  {n:84, status:'bloqueado',  desc:'1º Grupo H × 2º Grupo J'},
+  {n:85, status:'bloqueado',  desc:'🇨🇭 Suíça (1º Grupo B) × Melhor 3º entre Grupos E/F/G/I/J'},
+  {n:86, status:'bloqueado',  desc:'1º Grupo J × 2º Grupo H'},
+  {n:87, status:'bloqueado',  desc:'1º Grupo K × Melhor 3º entre Grupos D/E/I/J/L'},
+  {n:88, status:'bloqueado',  desc:'🇦🇺 Austrália (2º Grupo D) × 2º Grupo G'}
+];
+
+var RODADAS = [
+  {id:'dezesseisavos', label:'16 avos', icon:'🟢', jogos:ROUND32, status:'aberta'},
+  {id:'oitavas', label:'Oitavas', icon:'🔒', status:'bloqueada', motivo:'Libera quando todos os jogos dos 16 avos forem definidos (depende do fim da fase de grupos).'},
+  {id:'quartas', label:'Quartas', icon:'🔒', status:'bloqueada', motivo:'Libera quando todas as oitavas de final forem definidas.'},
+  {id:'semi', label:'Semifinal', icon:'🔒', status:'bloqueada', motivo:'Libera quando todas as quartas de final forem definidas.'},
+  {id:'final', label:'Final', icon:'🔒', status:'bloqueada', motivo:'Libera quando as duas semifinais forem definidas (inclui também a decisão do 3º lugar).'}
+];
+
+var STORAGE_KEY = 'copa2026_matamata_v1';
+var rodadaAtual = 'dezesseisavos';
+var dados = {nome:'', placares:{}};
+
+function carregar(){
+  try{
+    var raw = localStorage.getItem(STORAGE_KEY);
+    if(raw){
+      var d = JSON.parse(raw);
+      dados.nome = d.nome || '';
+      dados.placares = d.placares || {};
+    }
+  }catch(e){}
+  document.getElementById('nomeP').value = dados.nome;
+}
+
+function salvar(){
+  dados.nome = document.getElementById('nomeP').value.trim();
+  localStorage.setItem(STORAGE_KEY, JSON.stringify(dados));
+  var st = document.getElementById('saveStatus');
+  st.textContent = '💾 Salvo às ' + new Date().toLocaleTimeString('pt-BR',{hour:'2-digit',minute:'2-digit'});
+}
+
+function renderTabs(){
+  var c = document.getElementById('tabsContainer');
+  c.innerHTML = '';
+  RODADAS.forEach(function(r){
+    var b = document.createElement('button');
+    b.className = 'tab-btn' + (r.id===rodadaAtual?' ativa':'') + (r.status==='bloqueada'?' bloqueada':'');
+    b.innerHTML = '<span class="lock">'+r.icon+'</span> '+r.label;
+    b.onclick = function(){ rodadaAtual = r.id; render(); };
+    c.appendChild(b);
+  });
+}
+
+function renderConteudo(){
+  var c = document.getElementById('conteudoRodada');
+  var btns = document.getElementById('btnsFinais');
+  var r = RODADAS.filter(function(x){return x.id===rodadaAtual})[0];
+
+  if(r.status === 'bloqueada'){
+    c.innerHTML = '<div class="bloqueio-card"><div class="lic">🔒</div><h3>Esta fase ainda não foi liberada</h3><p>'+r.motivo+'</p></div>';
+    btns.style.display = 'none';
+    return;
+  }
+
+  btns.style.display = 'block';
+  var html = '<p class="progresso-txt" id="progressoTxt"></p><div class="progresso-bar-wrap"><div class="progresso-bar" id="progressoBar" style="width:0%"></div></div><div class="jogos-grid">';
+
+  r.jogos.forEach(function(j){
+    if(j.status === 'aberto'){
+      var p = dados.placares[j.n] || {a:'', b:''};
+      html += '<div class="jogo-card">'
+        + '<div class="jogo-num">Jogo '+j.n+' &middot; '+j.desc+'</div>'
+        + '<div class="confronto">'
+        + '<span class="time" style="text-align:right">'+j.a+'</span>'
+        + '<div class="placar-inputs">'
+        + '<input type="number" min="0" max="20" inputmode="numeric" id="ja_'+j.n+'" value="'+p.a+'" onchange="atualizaPlacar('+j.n+')">'
+        + '<span class="placar-x">×</span>'
+        + '<input type="number" min="0" max="20" inputmode="numeric" id="jb_'+j.n+'" value="'+p.b+'" onchange="atualizaPlacar('+j.n+')">'
+        + '</div>'
+        + '<span class="time">'+j.b+'</span>'
+        + '</div></div>';
+    } else {
+      html += '<div class="jogo-card bloqueado">'
+        + '<div class="jogo-num">Jogo '+j.n+'</div>'
+        + '<div class="confronto">'
+        + '<span class="time-bloq">'+j.desc+'</span>'
+        + '<span class="tag-lock">🔒 A definir</span>'
+        + '</div></div>';
+    }
+  });
+
+  html += '</div>';
+  c.innerHTML = html;
+  atualizaProgresso();
+}
+
+function atualizaPlacar(n){
+  var a = document.getElementById('ja_'+n).value;
+  var b = document.getElementById('jb_'+n).value;
+  dados.placares[n] = {a:a, b:b};
+  salvar();
+  atualizaProgresso();
+}
+
+function atualizaProgresso(){
+  var r = RODADAS.filter(function(x){return x.id===rodadaAtual})[0];
+  if(!r || r.status!=='aberta') return;
+  var abertos = r.jogos.filter(function(j){return j.status==='aberto'});
+  var preenchidos = abertos.filter(function(j){
+    var p = dados.placares[j.n];
+    return p && p.a !== '' && p.a !== undefined && p.b !== '' && p.b !== undefined;
+  }).length;
+  var txt = document.getElementById('progressoTxt');
+  var bar = document.getElementById('progressoBar');
+  if(txt) txt.textContent = preenchidos + ' de ' + abertos.length + ' jogos liberados preenchidos';
+  if(bar) bar.style.width = (abertos.length? (preenchidos/abertos.length*100):0) + '%';
+}
+
+function render(){
+  renderTabs();
+  renderConteudo();
+}
+
+function mostrarResumo(){
+  var nome = document.getElementById('nomeP').value.trim();
+  if(!nome){ toast('Preencha seu nome antes de continuar.', 'err'); return; }
+  var html = '';
+  var algum = false;
+  RODADAS.forEach(function(r){
+    if(r.status !== 'aberta') return;
+    r.jogos.forEach(function(j){
+      if(j.status !== 'aberto') return;
+      var p = dados.placares[j.n];
+      if(!p || p.a==='' || p.b==='') return;
+      algum = true;
+      html += '<div class="r-jogo"><span class="rj-times">Jogo '+j.n+': '+j.a+' × '+j.b+'</span><span class="rj-placar">'+p.a+' × '+p.b+'</span></div>';
+    });
+  });
+  if(!algum) html = '<p style="text-align:center;color:#999;padding:20px">Nenhum placar preenchido ainda.</p>';
+  document.getElementById('rNome').textContent = nome;
+  document.getElementById('rConteudo').innerHTML = html;
+  document.getElementById('rModal').classList.add('ativo');
+}
+
+function exportarParaOrganizador(){
+  var nome = document.getElementById('nomeP').value.trim();
+  if(!nome){ toast('Preencha seu nome antes de exportar.', 'err'); return; }
+  salvar();
+
+  var linhas = [['Nº Jogo','Rodada','Confronto','Placar Time A','Placar Time B','Status']];
+  RODADAS.forEach(function(r){
+    if(r.status !== 'aberta') return;
+    r.jogos.forEach(function(j){
+      if(j.status === 'aberto'){
+        var p = dados.placares[j.n] || {a:'',b:''};
+        linhas.push([j.n, r.label, j.a+' x '+j.b, p.a, p.b, 'Liberado']);
+      } else {
+        linhas.push([j.n, r.label, j.desc, '', '', 'A definir']);
+      }
+    });
+  });
+
+  var wb = XLSX.utils.book_new();
+  var ws = XLSX.utils.aoa_to_sheet(linhas);
+  ws['!cols'] = [{wch:8},{wch:12},{wch:46},{wch:14},{wch:14},{wch:12}];
+  XLSX.utils.book_append_sheet(wb, ws, 'APOSTA_16AVOS');
+
+  var nomeArq = 'apostas_matamata_copa2026_' + nome.replace(/[^a-zA-Z0-9]+/g,'_') + '.xlsx';
+  XLSX.writeFile(wb, nomeArq);
+  toast('Arquivo exportado: ' + nomeArq, 'ok');
+}
+
+function toast(msg, tipo){
+  var t = document.getElementById('toast');
+  t.textContent = msg;
+  t.className = 'toast show ' + (tipo||'');
+  setTimeout(function(){ t.className='toast'; }, 3200);
+}
+
+document.getElementById('nomeP').addEventListener('input', salvar);
+
+carregar();
+render();
+</script>
+</body>
+</html>
