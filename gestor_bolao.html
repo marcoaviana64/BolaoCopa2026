@@ -83,6 +83,7 @@ td.pontos{font-weight:900;font-size:1em;color:#FFD700}
 .b1{background:#FFD700;color:#333}
 .b2{background:#C0C0C0;color:#333}
 .bx{background:#555;color:#aaa}
+.bp{background:#b8860b;color:#fff}
 @media(max-width:600px){.grupos-resultados{grid-template-columns:1fr}.btns-acao{flex-direction:column}}
 </style>
 </head>
@@ -348,10 +349,15 @@ function removerPart(i){
 
 // ── CALCULAR ─────────────────────────────────────────────────────
 function normalizar(s){return(s||'').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'').trim();}
-function acertou(aposta,reais){
-  var a=normalizar(aposta);
-  return reais.some(function(r){return normalizar(r)===a&&a!=='';});
+// Pontua\u00e7\u00e3o: 2 pts = time certo na posi\u00e7\u00e3o exata | 1 pt = time certo mas posi\u00e7\u00e3o trocada | 0 pts = n\u00e3o classificado
+function pontuarSelecao(apTime,realCerto,realOutro){
+  var t=normalizar(apTime);
+  if(!t)return 0;
+  if(t===normalizar(realCerto))return 2;
+  if(realOutro&&t===normalizar(realOutro))return 1;
+  return 0;
 }
+function labelSelecao(pts){return pts===2?'\u2713\u2713 Exato (2pts)':pts===1?'\u2713 Classificado, posi\u00e7\u00e3o trocada (1pt)':'\u2717 N\u00e3o classificado (0pts)';}
 
 function calcular(){
   if(!participantes.length){mostrarToast('Importe ao menos um participante!','err');return;}
@@ -377,12 +383,14 @@ function calcular(){
     var pts=0,celulas='';
     GRUPOS.forEach(function(g,gi){
       var ap=p.apostas[gi]||{p1:'',p2:''};
-      var reais=[resultados[gi].p1,resultados[gi].p2];
-      var ac1=temResultados&&acertou(ap.p1,reais);
-      var ac2=temResultados&&acertou(ap.p2,reais);
-      if(ac1)pts++;if(ac2)pts++;
-      var t1=ap.p1?'<span class="badge-s '+(ac1?'b1':'bx')+'">'+ap.p1.substring(0,10)+'</span>':'<span style="color:#444">—</span>';
-      var t2=ap.p2?'<span class="badge-s '+(ac2?'b2':'bx')+'">'+ap.p2.substring(0,10)+'</span>':'<span style="color:#444">—</span>';
+      var real=resultados[gi];
+      var pts1=temResultados?pontuarSelecao(ap.p1,real.p1,real.p2):0;
+      var pts2=temResultados?pontuarSelecao(ap.p2,real.p2,real.p1):0;
+      pts+=pts1+pts2;
+      var cls1=pts1===2?'b1':(pts1===1?'bp':'bx');
+      var cls2=pts2===2?'b2':(pts2===1?'bp':'bx');
+      var t1=ap.p1?'<span class="badge-s '+cls1+'">'+ap.p1.substring(0,10)+'</span>':'<span style="color:#444">—</span>';
+      var t2=ap.p2?'<span class="badge-s '+cls2+'">'+ap.p2.substring(0,10)+'</span>':'<span style="color:#444">—</span>';
       celulas+='<td style="min-width:90px">'+t1+'<br>'+t2+'</td>';
     });
     scores.push({nome:p.nome,pts:pts,celulas:celulas});
@@ -393,7 +401,7 @@ function calcular(){
 
   scores.forEach(function(s){
     html+='<tr><td>👤 '+s.nome+'</td>'+s.celulas;
-    if(temResultados)html+='<td class="pontos">'+s.pts+'/24</td>';
+    if(temResultados)html+='<td class="pontos">'+s.pts+'/48</td>';
     html+='</tr>';
   });
   html+='</tbody></table></div>';
@@ -406,10 +414,10 @@ function calcular(){
     var medalhas=['🥇','🥈','🥉'];
     scores.forEach(function(s,i){
       var cls=i===0?'rank-1':i===1?'rank-2':i===2?'rank-3':'';
-      var pct=Math.round(s.pts/24*100);
+      var pct=Math.round(s.pts/48*100);
       rHtml+='<div class="rank-item '+cls+'"><span class="rank-pos">'+(medalhas[i]||('#'+(i+1)))+'</span>'+
         '<div><div class="rank-nome">'+s.nome+'</div><div class="rank-detail">'+pct+'% de acerto</div></div>'+
-        '<span class="rank-pts">'+s.pts+' <small style="font-size:.65em;color:#aaa">/ 24</small></span></div>';
+        '<span class="rank-pts">'+s.pts+' <small style="font-size:.65em;color:#aaa">/ 48</small></span></div>';
     });
     rHtml+='</div>';
     rWrap.innerHTML=rHtml;
@@ -435,10 +443,10 @@ function exportarResultado(){
     var pts=0,detalhes=[];
     GRUPOS.forEach(function(g,gi){
       var ap=p.apostas[gi]||{p1:'',p2:''};
-      var reais=[resultados[gi].p1,resultados[gi].p2];
-      var ac1=acertou(ap.p1,reais),ac2=acertou(ap.p2,reais);
-      if(ac1)pts++;if(ac2)pts++;
-      detalhes.push({g:g.l,p1:ap.p1,p2:ap.p2,ac1:ac1,ac2:ac2});
+      var real=resultados[gi];
+      var pts1=pontuarSelecao(ap.p1,real.p1,real.p2),pts2=pontuarSelecao(ap.p2,real.p2,real.p1);
+      pts+=pts1+pts2;
+      detalhes.push({g:g.l,p1:ap.p1,p2:ap.p2,pts1:pts1,pts2:pts2});
     });
     return{nome:p.nome,pts:pts,detalhes:detalhes};
   }).sort(function(a,b){return b.pts-a.pts;});
@@ -448,10 +456,10 @@ function exportarResultado(){
     ['BOLÃO COPA DO MUNDO 2026 — RANKING FINAL'],
     ['Gerado em:', new Date().toLocaleString('pt-BR')],
     [],
-    ['POSIÇÃO','PARTICIPANTE','ACERTOS','TOTAL','% ACERTO']
+    ['POSIÇÃO','PARTICIPANTE','PONTOS','TOTAL','% ACERTO']
   ];
   scores.forEach(function(s,i){
-    rankRows.push([i+1, s.nome, s.pts, 24, Math.round(s.pts/24*100)+'%']);
+    rankRows.push([i+1, s.nome, s.pts, 48, Math.round(s.pts/48*100)+'%']);
   });
   var wsRank=XLSX.utils.aoa_to_sheet(rankRows);
   wsRank['!cols']=[{wch:10},{wch:28},{wch:10},{wch:8},{wch:10}];
@@ -465,8 +473,8 @@ function exportarResultado(){
   var compRows=[['TABELA COMPARATIVA DETALHADA'],[''],cabecalho];
   scores.forEach(function(s){
     var row=[s.nome];
-    s.detalhes.forEach(function(d){row.push(d.p1+(d.ac1?' ✓':''),d.p2+(d.ac2?' ✓':''));});
-    row.push(s.pts+'/24');
+    s.detalhes.forEach(function(d){row.push(d.p1+(d.pts1===2?' ✓✓':d.pts1===1?' ✓':''),d.p2+(d.pts2===2?' ✓✓':d.pts2===1?' ✓':''));});
+    row.push(s.pts+'/48');
     compRows.push(row);
   });
   // Linha dos resultados reais
@@ -482,12 +490,12 @@ function exportarResultado(){
     var pRows=[
       [s.nome+' — Apostas e Acertos'],
       [],
-      ['GRUPO','APOSTA 1º','ACERTOU?','APOSTA 2º','ACERTOU?'],
+      ['GRUPO','APOSTA 1º','PONTUAÇÃO','APOSTA 2º','PONTUAÇÃO'],
     ];
     s.detalhes.forEach(function(d){
-      pRows.push(['Grupo '+d.g, d.p1||'—', d.ac1?'✓ SIM':'✗ NÃO', d.p2||'—', d.ac2?'✓ SIM':'✗ NÃO']);
+      pRows.push(['Grupo '+d.g, d.p1||'—', labelSelecao(d.pts1), d.p2||'—', labelSelecao(d.pts2)]);
     });
-    pRows.push([]);pRows.push(['TOTAL DE ACERTOS:', s.pts, '', 'DE:', 24]);
+    pRows.push([]);pRows.push(['TOTAL DE PONTOS:', s.pts, '', 'DE:', 48]);
     var wsP=XLSX.utils.aoa_to_sheet(pRows);
     wsP['!cols']=[{wch:10},{wch:22},{wch:10},{wch:22},{wch:10}];
     wsP['!merges']=[{s:{r:0,c:0},e:{r:0,c:4}}];

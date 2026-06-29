@@ -97,7 +97,7 @@ header p{color:#fff;font-size:.95em;opacity:.85}
     Total possível: <strong>até 4 pontos por jogo</strong>.
     <div class="ex">Exemplo: você aposta <strong>2x1</strong> e o jogo termina <strong>2x0</strong> no tempo normal → acerta o vencedor (+2) e acerta os gols de quem fez 2 (+1) = <strong>3 pontos</strong> (errou os gols do outro time, que você marcou 1 e fez 0).</div>
     <div class="ex">Se você apostar um <strong>placar de empate</strong> (ex: 1x1), não concorre aos 2 pontos de vencedor — mas ainda pode ganhar os pontos de gols se acertar o placar do tempo normal.</div>
-    Os confrontos marcados como <strong>🔒 a definir</strong> ainda dependem de grupos que não terminaram (G, H, J, K, L) e/ou da tabela oficial dos 8 melhores terceiros colocados. Eles serão liberados aqui assim que a fase de grupos terminar.
+    ✅ Fase de grupos encerrada — os 16 confrontos dos 16 avos de final já estão <strong>todos definidos</strong>! Pode apostar em qualquer jogo abaixo.
   </div>
 
   <div class="tabs" id="tabsContainer"></div>
@@ -123,24 +123,24 @@ header p{color:#fff;font-size:.95em;opacity:.85}
 
 <script>
 // ===== DADOS DOS 16 AVOS (Round of 32) — numeração oficial FIFA (Jogos 73 a 88) =====
-// status 'aberto' = confronto já 100% definido pela fase de grupos; 'bloqueado' = depende de grupo(s) ainda em disputa e/ou da tabela dos melhores terceiros
+// Fase de grupos encerrada: todos os 16 confrontos já estão definidos (status 'aberto')
 var ROUND32 = [
-  {n:73, status:'aberto',     a:'🇿🇦 África do Sul', b:'🇨🇦 Canadá',        desc:'2º Grupo A × 2º Grupo B'},
-  {n:74, status:'bloqueado',  desc:'🇩🇪 Alemanha (1º Grupo E) × Melhor 3º entre Grupos A/B/C/D/F'},
-  {n:75, status:'aberto',     a:'🇳🇱 Holanda', b:'🇲🇦 Marrocos',            desc:'1º Grupo F × 2º Grupo C'},
-  {n:76, status:'aberto',     a:'🇧🇷 Brasil', b:'🇯🇵 Japão',                desc:'1º Grupo C × 2º Grupo F'},
-  {n:77, status:'bloqueado',  desc:'🇫🇷 França (1º Grupo I) × Melhor 3º entre Grupos C/D/F/G/H'},
-  {n:78, status:'aberto',     a:'🇨🇮 Costa do Marfim', b:'🇳🇴 Noruega',     desc:'2º Grupo E × 2º Grupo I'},
-  {n:79, status:'bloqueado',  desc:'🇲🇽 México (1º Grupo A) × Melhor 3º entre Grupos C/E/F/H/I'},
-  {n:80, status:'bloqueado',  desc:'1º Grupo L × Melhor 3º entre Grupos E/H/I/J/K'},
-  {n:81, status:'bloqueado',  desc:'🇺🇸 Estados Unidos (1º Grupo D) × Melhor 3º entre Grupos B/E/F/I/J'},
-  {n:82, status:'bloqueado',  desc:'1º Grupo G × Melhor 3º entre Grupos A/E/H/I/J'},
-  {n:83, status:'bloqueado',  desc:'2º Grupo K × 2º Grupo L'},
-  {n:84, status:'bloqueado',  desc:'1º Grupo H × 2º Grupo J'},
-  {n:85, status:'bloqueado',  desc:'🇨🇭 Suíça (1º Grupo B) × Melhor 3º entre Grupos E/F/G/I/J'},
-  {n:86, status:'bloqueado',  desc:'1º Grupo J × 2º Grupo H'},
-  {n:87, status:'bloqueado',  desc:'1º Grupo K × Melhor 3º entre Grupos D/E/I/J/L'},
-  {n:88, status:'bloqueado',  desc:'🇦🇺 Austrália (2º Grupo D) × 2º Grupo G'}
+  {n:73, status:'aberto', a:'🇿🇦 África do Sul', b:'🇨🇦 Canadá',                desc:'2º Grupo A × 2º Grupo B'},
+  {n:74, status:'aberto', a:'🇩🇪 Alemanha', b:'🇵🇾 Paraguai',                   desc:'1º Grupo E × Melhor 3º (Grupo D)'},
+  {n:75, status:'aberto', a:'🇳🇱 Holanda', b:'🇲🇦 Marrocos',                    desc:'1º Grupo F × 2º Grupo C'},
+  {n:76, status:'aberto', a:'🇧🇷 Brasil', b:'🇯🇵 Japão',                        desc:'1º Grupo C × 2º Grupo F'},
+  {n:77, status:'aberto', a:'🇫🇷 França', b:'🇸🇪 Suécia',                       desc:'1º Grupo I × Melhor 3º (Grupo F)'},
+  {n:78, status:'aberto', a:'🇨🇮 Costa do Marfim', b:'🇳🇴 Noruega',             desc:'2º Grupo E × 2º Grupo I'},
+  {n:79, status:'aberto', a:'🇲🇽 México', b:'🇪🇨 Equador',                      desc:'1º Grupo A × Melhor 3º (Grupo E)'},
+  {n:80, status:'aberto', a:'🏴󠁧󠁢󠁥󠁮󠁧󠁿 Inglaterra', b:'🇨🇩 RD Congo',               desc:'1º Grupo L × Melhor 3º (Grupo K)'},
+  {n:81, status:'aberto', a:'🇺🇸 Estados Unidos', b:'🇧🇦 Bósnia e Herzegovina',  desc:'1º Grupo D × Melhor 3º (Grupo B)'},
+  {n:82, status:'aberto', a:'🇧🇪 Bélgica', b:'🇸🇳 Senegal',                     desc:'1º Grupo G × Melhor 3º (Grupo I)'},
+  {n:83, status:'aberto', a:'🇵🇹 Portugal', b:'🇭🇷 Croácia',                    desc:'2º Grupo K × 2º Grupo L'},
+  {n:84, status:'aberto', a:'🇪🇸 Espanha', b:'🇦🇹 Áustria',                     desc:'1º Grupo H × 2º Grupo J'},
+  {n:85, status:'aberto', a:'🇨🇭 Suíça', b:'🇩🇿 Argélia',                       desc:'1º Grupo B × Melhor 3º (Grupo J)'},
+  {n:86, status:'aberto', a:'🇦🇷 Argentina', b:'🇨🇻 Cabo Verde',                 desc:'1º Grupo J × 2º Grupo H'},
+  {n:87, status:'aberto', a:'🇨🇴 Colômbia', b:'🇬🇭 Gana',                       desc:'1º Grupo K × Melhor 3º (Grupo L)'},
+  {n:88, status:'aberto', a:'🇦🇺 Austrália', b:'🇪🇬 Egito',                     desc:'2º Grupo D × 2º Grupo G'}
 ];
 
 var RODADAS = [
